@@ -90,7 +90,7 @@ serve(async (req) => {
     // If no transcript provided, return safe (nothing to analyze)
     if (!transcript) {
       return new Response(
-        JSON.stringify({ safe: true, score: 0, reason: null, call_id }),
+        JSON.stringify({ safe: true, flagged: false, score: 0, reason: null, call_id }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -101,7 +101,7 @@ serve(async (req) => {
       console.error("LOVABLE_API_KEY not configured");
       // Fail open with a warning — don't block calls if AI is misconfigured
       return new Response(
-        JSON.stringify({ safe: true, score: 0, reason: null, call_id, warning: "Moderation temporarily unavailable" }),
+        JSON.stringify({ safe: true, flagged: false, score: 0, reason: null, call_id, warning: "Moderation temporarily unavailable" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -162,7 +162,7 @@ serve(async (req) => {
       console.error("AI gateway error:", status, await aiResponse.text());
       // Fail open — don't block calls due to AI errors
       return new Response(
-        JSON.stringify({ safe: true, score: 0, reason: null, call_id, warning: "Moderation temporarily unavailable" }),
+        JSON.stringify({ safe: true, flagged: false, score: 0, reason: null, call_id, warning: "Moderation temporarily unavailable" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -208,6 +208,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         safe: !flagged,
+        flagged,
         score,
         reason: flagged ? reason : null,
         call_id,

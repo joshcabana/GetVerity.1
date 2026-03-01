@@ -6,14 +6,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthCapabilities } from "@/hooks/useAuthCapabilities";
+import { requirePhoneVerification } from "@/lib/authCapabilities";
 import DropCard from "@/components/lobby/DropCard";
 import DropsFilter, { type FilterOption } from "@/components/lobby/DropsFilter";
 import MatchmakingOverlay from "@/components/lobby/MatchmakingOverlay";
 import BottomNav from "@/components/BottomNav";
 import { isToday, isThisWeek } from "date-fns";
 import { toast } from "sonner";
-import { REQUIRE_PHONE_VERIFICATION } from "@/lib/runtimeConfig";
-import { isTrustComplete } from "@/lib/trust";
 
 interface Drop {
   id: string;
@@ -32,6 +32,8 @@ const Lobby = () => {
   const { user, userTrust } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { data: authCapabilities } = useAuthCapabilities();
+  const requirePhoneVerificationEnabled = requirePhoneVerification();
   const [filter, setFilter] = useState<FilterOption>("all");
   const [matchmaking, setMatchmaking] = useState<{
     active: boolean;
@@ -40,7 +42,14 @@ const Lobby = () => {
     dropId: string;
   }>({ active: false, roomName: "", dropTitle: "", dropId: "" });
 
-  const trustComplete = isTrustComplete(userTrust, REQUIRE_PHONE_VERIFICATION);
+  const strictPhoneProviderBlocked = requirePhoneVerificationEnabled && authCapabilities?.phoneEnabled === false;
+  const fallbackPhoneModeActive = !requirePhoneVerificationEnabled && authCapabilities?.phoneEnabled === false;
+
+  const trustComplete = !!(
+    (!requirePhoneVerificationEnabled || userTrust?.phone_verified) &&
+    userTrust?.selfie_verified &&
+    userTrust?.safety_pledge_accepted
+  );
 
   // Fetch drops
   const { data: drops = [] } = useQuery<Drop[]>({
@@ -146,13 +155,17 @@ const Lobby = () => {
   const handleJoin = useCallback(async (drop: Drop) => {
     if (!user) return;
 
+    if (strictPhoneProviderBlocked) {
+      toast.error("Phone verification provider is unavailable. Please try again shortly.");
+      return;
+    }
+
     if (!trustComplete) {
-      const missing: string[] = [];
-      if (!userTrust?.selfie_verified) missing.push("selfie verification");
-      if (!userTrust?.safety_pledge_accepted) missing.push("safety pledge");
-      if (REQUIRE_PHONE_VERIFICATION && !userTrust?.phone_verified) missing.push("phone verification");
-      const missingText = missing.length > 0 ? missing.join(", ") : "verification";
-      toast.error(`Complete ${missingText} to join live Drops.`);
+      if (requirePhoneVerificationEnabled) {
+        toast.error("Complete phone, selfie, and safety pledge verification to join live Drops.");
+      } else {
+        toast.error("Complete selfie and safety pledge verification to join live Drops.");
+      }
       return;
     }
 
@@ -205,7 +218,7 @@ const Lobby = () => {
       toast.error(message);
       setMatchmaking((m) => ({ ...m, active: false }));
     }
-  }, [user, userTrust, trustComplete, navigate, stopPolling]);
+  }, [user, trustComplete, navigate, stopPolling, strictPhoneProviderBlocked, requirePhoneVerificationEnabled]);
 
   // Realtime for drops/RSVPs
   useEffect(() => {
@@ -252,6 +265,16 @@ const Lobby = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-5 pt-8">
+        {strictPhoneProviderBlocked && (
+          <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+            Live Drops are temporarily paused because phone verification is required but the SMS provider is offline.
+          </div>
+        )}
+        {fallbackPhoneModeActive && (
+          <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+            Continuity mode is active: phone verification is temporarily optional while the SMS provider is offline.
+          </div>
+        )}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
           className="mb-6">
           <div className="flex items-center gap-3 mb-2">

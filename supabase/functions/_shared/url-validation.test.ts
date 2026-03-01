@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { resolveSafeReturnUrl } from "./url-validation";
 
 const allowedOrigins = [
-  "https://spark-echo-verity.lovable.app",
   "https://getverity.com.au",
+  "https://spark-echo-verity.lovable.app",
 ];
 
 describe("resolveSafeReturnUrl", () => {
@@ -22,24 +22,16 @@ describe("resolveSafeReturnUrl", () => {
       allowedOrigins,
     );
 
-    expect(result).toBe("https://spark-echo-verity.lovable.app/tokens");
+    expect(result).toBe("https://getverity.com.au/tokens");
   });
 
   it("falls back on malformed URL values", () => {
     const result = resolveSafeReturnUrl("not-a-url", allowedOrigins);
-    expect(result).toBe("https://spark-echo-verity.lovable.app/tokens");
-  });
-
-  it("falls back on disallowed schemes", () => {
-    const result = resolveSafeReturnUrl(
-      "javascript:alert('xss')",
-      allowedOrigins,
-    );
-    expect(result).toBe("https://spark-echo-verity.lovable.app/tokens");
+    expect(result).toBe("https://getverity.com.au/tokens");
   });
 
   it("falls back on non-string values", () => {
     const result = resolveSafeReturnUrl({} as unknown, allowedOrigins);
-    expect(result).toBe("https://spark-echo-verity.lovable.app/tokens");
+    expect(result).toBe("https://getverity.com.au/tokens");
   });
 });

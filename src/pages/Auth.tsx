@@ -8,10 +8,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const RESEND_COOLDOWN_MS = 30_000;
-
-const normalizeEmail = (value: string) => value.trim().toLowerCase();
-
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,63 +15,18 @@ const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [signupEmailSentTo, setSignupEmailSentTo] = useState<string | null>(null);
-  const [lastSignupEmailAt, setLastSignupEmailAt] = useState<number | null>(null);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const clearSignupAssist = () => {
-    setSignupEmailSentTo(null);
-    setLastSignupEmailAt(null);
-  };
-
-  const handleResendVerification = async () => {
-    if (!signupEmailSentTo) return;
-
-    const now = Date.now();
-    if (lastSignupEmailAt && now - lastSignupEmailAt < RESEND_COOLDOWN_MS) {
-      const seconds = Math.ceil((RESEND_COOLDOWN_MS - (now - lastSignupEmailAt)) / 1000);
-      toast({
-        title: "Please wait",
-        description: `You can resend in ${seconds}s.`,
-      });
-      return;
-    }
-
-    setResending(true);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: signupEmailSentTo,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) throw error;
-
-      setLastSignupEmailAt(now);
-      toast({
-        title: "Verification email sent",
-        description: "Check your inbox, spam, and promotions folders.",
-      });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An unexpected error occurred";
-      toast({
-        title: "Could not resend email",
-        description: message,
-        variant: "destructive",
-      });
-    } finally {
-      setResending(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail || !password.trim()) return;
+    if (!email.trim() || !password.trim()) return;
     setLoading(true);
 
     try {
       if (mode === "signup") {
+        const normalizedEmail = email.trim().toLowerCase();
         const { error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -85,13 +36,13 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        setSignupEmailSentTo(normalizedEmail);
-        setLastSignupEmailAt(Date.now());
+        setPendingVerificationEmail(normalizedEmail);
         toast({
           title: "Check your inbox",
-          description: "We sent a verification link. If it does not arrive, use resend below.",
+          description: `We've sent a verification link to ${normalizedEmail}.`,
         });
       } else {
+        const normalizedEmail = email.trim().toLowerCase();
         const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
 
@@ -122,11 +73,32 @@ const Auth = () => {
     }
   };
 
-  const toggleMode = () => {
-    setMode((prev) => {
-      if (prev === "signup") clearSignupAssist();
-      return prev === "login" ? "signup" : "login";
-    });
+  const handleResendVerification = async () => {
+    if (!pendingVerificationEmail) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingVerificationEmail,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      toast({
+        title: "Verification email resent",
+        description: `A new verification link was sent to ${pendingVerificationEmail}.`,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unable to resend verification email";
+      toast({
+        title: "Resend failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -177,46 +149,34 @@ const Auth = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <button onClick={toggleMode}
+            <button onClick={() => {
+              setMode(mode === "login" ? "signup" : "login");
+              setPendingVerificationEmail(null);
+            }}
               className="text-sm text-primary hover:text-primary/80 transition-colors">
               {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
             </button>
           </div>
-
-          {mode === "signup" && signupEmailSentTo && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4"
-            >
-              <p className="text-sm text-foreground mb-1">
-                Verification email sent to <span className="font-medium">{signupEmailSentTo}</span>.
+          {mode === "signup" && pendingVerificationEmail && (
+            <div className="mt-4 rounded-lg border border-border bg-card/40 p-4 text-left">
+              <p className="text-sm text-foreground mb-2">
+                Waiting for verification email?
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Check spam and promotions. If it still does not arrive, resend and then try signing in after confirmation.
+              <p className="text-xs text-muted-foreground mb-3">
+                Check inbox, spam, and promotions for <span className="font-mono">{pendingVerificationEmail}</span>.
+                If it still has not arrived, resend below.
               </p>
-              <div className="mt-4 flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleResendVerification}
-                  disabled={resending}
-                >
-                  {resending ? "Resending..." : "Resend verification email"}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    clearSignupAssist();
-                    setEmail("");
-                    setDisplayName("");
-                  }}
-                >
-                  Use a different email
-                </Button>
-              </div>
-            </motion.div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleResendVerification}
+                disabled={resending}
+              >
+                {resending ? "Resending..." : "Resend verification email"}
+              </Button>
+            </div>
           )}
         </motion.div>
       </div>

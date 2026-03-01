@@ -106,6 +106,50 @@ serve(async (req) => {
     }
   }
 
+  async function clearSubscription(customerId: string) {
+    const profile = await findProfileByCustomer(customerId);
+    if (!profile) return;
+    await supabase
+      .from("profiles")
+      .update({ subscription_tier: "free", subscription_expires_at: null })
+      .eq("user_id", profile.user_id);
+  }
+
+  async function syncSubscription(customerId: string, sub: Stripe.Subscription) {
+    const profile = await findProfileByCustomer(customerId);
+    if (!profile) return;
+
+    const canceledStatuses: Stripe.Subscription.Status[] = [
+      "canceled",
+      "incomplete_expired",
+      "unpaid",
+    ];
+    if (canceledStatuses.includes(sub.status)) {
+      await clearSubscription(customerId);
+      return;
+    }
+
+    const subscriptionPriceId = sub.items.data[0]?.price?.id;
+    const entitlement = subscriptionPriceId ? PRICE_ENTITLEMENTS[subscriptionPriceId] : null;
+    if (!entitlement?.tier) {
+      // Unknown subscription product: fail safe to free tier.
+      await clearSubscription(customerId);
+      return;
+    }
+
+    const expiresAt = sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : null;
+
+    await supabase
+      .from("profiles")
+      .update({
+        subscription_tier: entitlement.tier,
+        subscription_expires_at: expiresAt,
+      })
+      .eq("user_id", profile.user_id);
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -152,14 +196,28 @@ serve(async (req) => {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
         if (!customerId) break;
+        await clearSubscription(customerId);
+        break;
+      }
 
-        const profile = await findProfileByCustomer(customerId);
-        if (!profile) break;
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+        if (!customerId) break;
+        await syncSubscription(customerId, sub);
+        break;
+      }
 
-        await supabase
-          .from("profiles")
-          .update({ subscription_tier: "free", subscription_expires_at: null })
-          .eq("user_id", profile.user_id);
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+        const subscriptionId =
+          typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
+
+        if (!customerId || !subscriptionId) break;
+
+        const sub = await stripe.subscriptions.retrieve(subscriptionId);
+        await syncSubscription(customerId, sub);
         break;
       }
     }

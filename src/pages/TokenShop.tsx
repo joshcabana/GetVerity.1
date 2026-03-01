@@ -66,7 +66,10 @@ const TokenShop = () => {
   const handleManageSubscription = async () => {
     setLoadingPriceId("manage");
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
+      const returnUrl = `${window.location.origin}/tokens`;
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
+        body: { return_url: returnUrl },
+      });
       if (error) throw error;
       if (data?.url) window.location.href = data.url;
     } catch {

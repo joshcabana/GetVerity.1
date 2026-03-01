@@ -14,6 +14,7 @@ import GuardianNet from "@/components/call/GuardianNet";
 import SafeExitModal from "@/components/call/SafeExitModal";
 import MutualSparkReveal from "@/components/call/MutualSparkReveal";
 import { useAgoraCall } from "@/hooks/useAgoraCall";
+import { isModerationFlagged } from "@/lib/moderation";
 
 type CallPhase =
   | "loading"
@@ -263,7 +264,7 @@ const LiveCall = () => {
         },
       },
     }).then(({ data }) => {
-      if (data?.flagged) {
+      if (isModerationFlagged(data)) {
         toast.warning('Safety check flagged this call. Our team will review.');
       }
     }).catch(() => {

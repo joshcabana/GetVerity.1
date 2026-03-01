@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isModerationFlagged } from "@/lib/moderation";
 
-describe("live call moderation wiring", () => {
-  it("includes transcript payload and browser speech fallback handling", () => {
-    const filePath = resolve(process.cwd(), "src/pages/LiveCall.tsx");
-    const code = readFileSync(filePath, "utf8");
+describe("moderation decision parsing", () => {
+  it("honors explicit flagged responses", () => {
+    expect(isModerationFlagged({ flagged: true, safe: true })).toBe(true);
+    expect(isModerationFlagged({ flagged: false, safe: false })).toBe(false);
+  });
 
-    expect(code).toContain("SpeechRecognition");
-    expect(code).toContain("webkitSpeechRecognition");
-    expect(code).toContain("transcript: textToSend");
-    expect(code).toContain("transcript_available: transcriptAvailable");
+  it("falls back to inverse safe responses for backward compatibility", () => {
+    expect(isModerationFlagged({ safe: false })).toBe(true);
+    expect(isModerationFlagged({ safe: true })).toBe(false);
+  });
+
+  it("fails safe on unknown payload shapes", () => {
+    expect(isModerationFlagged(null)).toBe(false);
+    expect(isModerationFlagged({})).toBe(false);
   });
 });

@@ -129,4 +129,15 @@ npm run lint
 
 # Build
 npm run build
+
+# Validate Supabase auth settings against runtime policy
+npm run check:auth-settings
 ```
+
+### Auth Provider Policy
+
+- Canonical Supabase project: `itdzdyhdkbcxbqgukzis`
+- Canonical source-of-truth matrix: [docs/environment-matrix.md](docs/environment-matrix.md)
+- Strict mode default: `VITE_REQUIRE_PHONE_VERIFICATION=true`
+- Temporary incident fallback: set `VITE_REQUIRE_PHONE_VERIFICATION=false` and redeploy
+- Full runbook: [docs/auth-unblock-runbook.md](docs/auth-unblock-runbook.md)

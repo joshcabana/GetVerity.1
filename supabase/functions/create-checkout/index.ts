@@ -8,9 +8,9 @@ const corsHeaders = {
 };
 
 const ALLOWED_ORIGINS = [
+  "https://getverity.com.au",
   "https://spark-echo-verity.lovable.app",
   "https://id-preview--a81e90ba-a208-41e2-bf07-a3adfb94bfcb.lovable.app",
-  "https://getverity.com.au",
 ];
 
 // Allowlisted price IDs → mode mapping

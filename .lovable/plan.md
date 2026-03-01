@@ -1,67 +1,56 @@
 
 
-# Comprehensive Quality Assessment — Post-Edit Review
+## Review Results: 15 Changed Files + Security Scan + Architecture Check
 
-## Verification Summary
+### Security Scan Result
+The database linter returned **no issues**. All RLS policies are properly configured, including the deny-all policy on `stripe_processed_events`.
 
-All 11 fixes from prior rounds are confirmed implemented and correct:
+### Files Reviewed — Status
 
-| Fix | Status |
-|-----|--------|
-| Stripe secrets (SECRET_KEY, WEBHOOK_SECRET) | Configured |
-| Appeal page wired to real DB + submit-appeal | Verified |
-| RLS deny-all on stripe_processed_events | Verified |
-| create-checkout uses stripe_customer_id | Verified |
-| getverity.com.au in ALLOWED_ORIGINS (both functions) | Verified |
-| constructEventAsync in stripe-webhook | Verified (line 38) |
-| safe-area-bottom CSS utility | Verified (index.css line 187) |
-| Dead spark variable removed from VerityLogo | Verified |
-| useAgoraCall deps include join/leave | Verified (line 128) |
-| customer-portal uses stripe_customer_id | Verified |
-| BottomNav Home tab points to /lobby | Verified |
+All 9 fixes from the quality assessment have been correctly implemented:
 
-## Changed Files Review — No Issues Found
+| Fix | Status | Verified |
+|-----|--------|----------|
+| Stripe secrets configured | Done | Secrets exist in config |
+| Appeal page wired to real data | Done | Queries `moderation_flags` + `appeals`, calls `submit-appeal` |
+| RLS deny-all on `stripe_processed_events` | Done | Linter clean |
+| `create-checkout` uses `stripe_customer_id` | Done | Lookup/create pattern implemented |
+| `getverity.com.au` in ALLOWED_ORIGINS | Done | Both `create-checkout` and `customer-portal` |
+| `constructEventAsync` in webhook | Done | Line 38 |
+| `safe-area-bottom` CSS utility | Done | In `index.css` |
+| Dead `spark` removed from VerityLogo | Done | No unused variable |
+| `useAgoraCall` deps fixed | Done | `join` and `leave` in deps array (line 128) |
 
-All 24 changed files reviewed. No bugs, regressions, or contradictions detected:
+### Remaining Issues Found (2 items)
 
-- **LiveCall.tsx** — Speech recognition wiring correct with proper cleanup, moderation fires every 15s, transcript + metadata payloads match ai-moderate contract
-- **Onboarding.tsx** — upsert with onConflict works correctly, preferences cast handled cleanly
-- **Appeal.tsx** — Real DB queries for flags/appeals, submit-appeal invocation correct
-- **Transparency.tsx** — Reads from platform_stats, handles null/zero gracefully
-- **find-match** — Atomic claim via RPC, proper rollback on failure, safe error messages
-- **customer-portal** — stripe_customer_id lookup with email fallback + caching
-- **create-checkout** — Customer lookup/create pattern, price allowlist, origin validation
-- **stripe-webhook** — constructEventAsync, idempotency, customer-ID-first lookup
-- **VerityLogo.tsx** — Clean, no dead code
-- **BottomNav.tsx** — Home → /lobby correct
-- **GuardianNet.tsx** — Clearly marked "beta" / "preview-only"
-- **SparkExtendModal.tsx** — Clearly marked "beta"
-- **FeaturesSection.tsx** — "Live Safety Checks" copy matches implementation (transcript snippets where browser support exists)
-- **useAgoraCall.ts** — Correct dependency arrays, proper cleanup on error
-- **pilot-readiness-checklist.md** — Accurate, no false claims
+**1. `customer-portal` still uses email lookup instead of `stripe_customer_id`**
+`customer-portal/index.ts` line 64 does `stripe.customers.list({ email: customerEmail })` instead of first checking the profile's `stripe_customer_id`. This is inconsistent with the `create-checkout` fix — the same pattern should be applied here.
 
-## No Hallucinations or Contradictions
+**Fix:** In `customer-portal/index.ts`, query the user's profile for `stripe_customer_id` first. Only fall back to email lookup if not found.
 
-- Marketing copy in FeaturesSection matches actual implementation
-- All beta/preview features clearly labeled in UI
-- PROJECT_OVERVIEW table/function counts match schema
-- All 7 required secrets are configured
+**2. BottomNav "Home" tab navigates to `/` (landing page)**
+`BottomNav.tsx` line 6: the "Home" tab points to `/` which is the public landing page, not the authenticated lobby. For logged-in users, this should point to `/lobby`.
 
-## Secrets Status: Complete
+**Fix:** Change the Home tab path from `/` to `/lobby`.
 
-All 7 secrets configured: AGORA_APP_ID, AGORA_APP_CERTIFICATE, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, LOVABLE_API_KEY, Google_Gemini, OpenAI.
+### Files with No Issues
+- `DropCard.tsx` — Clean, well-structured
+- `PhoneVerifyStep.tsx` — Proper OTP flow, good error handling
+- `PreferencesStep.tsx` — Clean, queries rooms from DB correctly
+- `SignInStep.tsx` — Proper email OTP flow
+- `SparkCard.tsx` — Clean
+- `Auth.tsx` — Proper signup/login with onboarding redirect
+- `LiveCall.tsx` — Complex but well-structured, good realtime subscription cleanup
+- `SparkHistory.tsx` — Proper partner name resolution
+- `find-match/index.ts` — Good atomic matching with block filtering and rollback
+- `AppHeader.tsx` — Clean route-based visibility
+- `VerityLogo.tsx` — Dead code removed successfully
+- `useAgoraCall.ts` — Deps fixed correctly
 
-## No Code Changes Required
+### Implementation Plan (2 remaining fixes)
 
-Zero issues found in this review. The codebase is consistent, correct, and free of contradictions.
-
-## Items Beyond AI Control (Manual)
-
-| Item | Action Required |
-|------|----------------|
-| Real Stripe Price IDs | Replace placeholder IDs (price_starter_10, etc.) with real Stripe price IDs in both create-checkout PRICE_MAP and stripe-webhook PRICE_ENTITLEMENTS |
-| Stripe Webhook Endpoint | Configure in Stripe Dashboard pointing to your stripe-webhook function URL, subscribe to checkout.session.completed and customer.subscription.deleted events |
-| Avatars Storage Bucket | Verify the avatars bucket exists in storage with public read access for profile images |
-| Platform Stats Aggregation | Deploy a scheduled job to populate platform_stats with real metrics (currently shows defaults/zeros) |
-| Pilot Readiness Checklist | Run through docs/pilot-readiness-checklist.md before launch — all items are manual verification steps |
+| # | Fix | File |
+|---|-----|------|
+| 1 | Use `stripe_customer_id` in customer-portal (match create-checkout pattern) | `supabase/functions/customer-portal/index.ts` |
+| 2 | Change BottomNav Home tab path from `/` to `/lobby` | `src/components/BottomNav.tsx` |
 

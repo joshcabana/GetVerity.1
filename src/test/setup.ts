@@ -13,8 +13,3 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
-
-Object.defineProperty(window, "scrollTo", {
-  writable: true,
-  value: () => {},
-});
