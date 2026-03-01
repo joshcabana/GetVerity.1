@@ -14,9 +14,9 @@ Execution evidence for the "Verity Owner-Mode Closure Runbook (100% Completion)"
 | Phase 1: Control Plane + Baseline | ✅ Complete | Canonical `.env` and baseline checks validated |
 | Phase 2: Supabase Access Recovery | ⛔ Blocked | Current account session has limited project role on `itdz...` |
 | Phase 3: SMTP + Twilio Auth Providers | ⛔ Blocked | Depends on Phase 2 role elevation + provider credentials |
-| Phase 4: Production Deploy Cutover | ⛔ Blocked | Hosting dashboard/deploy access unavailable in current browser session |
+| Phase 4: Production Deploy Cutover | ✅ Complete | Lovable publish update executed; live bundle hash changed |
 | Phase 5: Strict Mode Activation | ⛔ Blocked | Requires Twilio enabled (`external.phone=true`) and production deploy |
-| Phase 6: Full Verification Protocol | ✅ Local complete / ⛔ Prod E2E blocked | Local gates pass; prod E2E depends on auth/deploy blockers |
+| Phase 6: Full Verification Protocol | ✅ Local complete / ⛔ Prod E2E blocked | Local gates pass; prod E2E depends on auth provider readiness |
 | Phase 7: Ops Closeout | ⚠️ Partial | Repo hygiene verified; secrets/webhook dashboard checks blocked by access |
 | Phase 8: Final Evidence + Signoff | ✅ Complete | This document created with final state |
 
@@ -51,6 +51,21 @@ Interpretation:
 - Canonical auth is reachable and healthy for email signup.
 - Phone provider is not enabled yet; strict mode cannot be activated.
 
+Strict-mode gate simulation:
+
+Command:
+```bash
+cd /Users/joshcabana/Documents/spark-echo-verity-sync-exec
+set -a; source /Users/joshcabana/Documents/spark-echo-verity-main/.env; set +a
+VITE_REQUIRE_PHONE_VERIFICATION=true npm run check:auth-settings
+```
+
+Observed output:
+- `FAIL: external.phone must be true while VITE_REQUIRE_PHONE_VERIFICATION=true.`
+
+Interpretation:
+- Current provider state correctly blocks strict policy activation.
+
 ## Local Quality Gates (Latest Run)
 
 Executed in `/Users/joshcabana/Documents/spark-echo-verity-sync-exec`:
@@ -65,18 +80,21 @@ Executed in `/Users/joshcabana/Documents/spark-echo-verity-sync-exec`:
 
 ## Production Deployment Fingerprint
 
-Timestamp: `2026-03-01 22:54:32 AEDT`
+Timestamp: `2026-03-01 23:04:xx AEDT`
+
+Deployment action:
+- Lovable project `Verity Spark` -> `Publish` -> `Update` completed.
+- Publish menu state returned `Up to date`.
 
 Live HTML fingerprint:
-- Script: `src="/assets/index-BZvc5esd.js"`
-- Heavy module preloads still present:
-  - `agora-BsHBZQAx.js`
-  - `framer-motion-Jp1VdXQ8.js`
-  - `chart-ChQWK7e9.js`
+- Script: `src="/assets/index-C6w1RQwN.js"`
+- CSS: `href="/assets/index-D_2sUX8F.css"`
+- Prior hash `index-BZvc5esd.js` no longer present.
+- No heavy landing preloads for `agora`, `framer-motion`, or `chart` observed in root HTML.
 
 Interpretation:
-- Production is still serving an older bundle.
-- Latest merged runtime improvements are not yet deployed to live.
+- Production is now serving the latest deployed bundle.
+- Prior stale-hash/preload issue is resolved.
 
 ## Access and Operational Blockers (Observed)
 
@@ -86,9 +104,8 @@ Interpretation:
 - Therefore SMTP/Twilio/provider updates cannot be performed from this session.
 
 ### Hosting deploy blocker
-- Could not access an authenticated deployment control path from current Lovable browser session.
-- Login flow requires account credentials/session not available to this automation context.
-- Therefore live bundle cannot be redeployed from this session.
+- Resolved in this run.
+- Authenticated Lovable session had deploy controls; production update executed successfully.
 
 ## Repo Hygiene Verification
 
@@ -108,9 +125,8 @@ Result:
 2. Configure Auth SMTP provider in Supabase (host/port/user/pass/from + DNS SPF/DKIM/DMARC validated).
 3. Configure Twilio phone provider in Supabase (`Account SID`, `Auth Token`, `Message Service SID`).
 4. Confirm `external.phone=true` via `npm run check:auth-settings`.
-5. Deploy latest `main` to production hosting so bundle hash changes from `index-BZvc5esd.js`.
-6. Set production env `VITE_REQUIRE_PHONE_VERIFICATION=true` and redeploy.
-7. Execute full production E2E path and verify logs/webhooks.
+5. Set production env `VITE_REQUIRE_PHONE_VERIFICATION=true` and redeploy.
+6. Execute full production E2E path and verify logs/webhooks.
 
 ## Launch Readiness Decision
 
@@ -118,4 +134,3 @@ Current status: **Not strict-mode launch-ready yet**.
 
 Reason:
 - Remaining blockers are external operational controls (project role, provider setup, production deploy) outside repo code execution scope.
-
