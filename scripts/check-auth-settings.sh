@@ -39,6 +39,9 @@ ANON_KEY="$(read_env_var "VITE_SUPABASE_PUBLISHABLE_KEY")"
 REQUIRE_PHONE_FLAG="$(read_env_var "VITE_REQUIRE_PHONE_VERIFICATION")"
 REQUIRE_PHONE="${REQUIRE_PHONE_FLAG:-true}"
 REQUIRE_PHONE_LOWER="$(echo "$REQUIRE_PHONE" | tr '[:upper:]' '[:lower:]')"
+REQUIRE_GOOGLE_FLAG="$(read_env_var "VITE_REQUIRE_GOOGLE_AUTH")"
+REQUIRE_GOOGLE="${REQUIRE_GOOGLE_FLAG:-false}"
+REQUIRE_GOOGLE_LOWER="$(echo "$REQUIRE_GOOGLE" | tr '[:upper:]' '[:lower:]')"
 
 if [[ -z "$SUPA_URL" || -z "$ANON_KEY" ]]; then
   echo "Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY in $ENV_FILE" >&2
@@ -51,11 +54,12 @@ SETTINGS_JSON="$(
     -H "Authorization: Bearer $ANON_KEY"
 )"
 
-echo "$SETTINGS_JSON" | jq '{disable_signup, mailer_autoconfirm, external:{email:.external.email, phone:.external.phone}}'
+echo "$SETTINGS_JSON" | jq '{disable_signup, mailer_autoconfirm, external:{email:.external.email, phone:.external.phone, google:.external.google}}'
 
 DISABLE_SIGNUP="$(echo "$SETTINGS_JSON" | jq -r '.disable_signup')"
 EMAIL_ENABLED="$(echo "$SETTINGS_JSON" | jq -r '.external.email')"
 PHONE_ENABLED="$(echo "$SETTINGS_JSON" | jq -r '.external.phone')"
+GOOGLE_ENABLED="$(echo "$SETTINGS_JSON" | jq -r '.external.google')"
 
 if [[ "$DISABLE_SIGNUP" != "false" ]]; then
   echo "FAIL: disable_signup must be false." >&2
@@ -74,6 +78,11 @@ fi
 
 if [[ "$REQUIRE_PHONE_LOWER" != "true" && "$PHONE_ENABLED" != "true" ]]; then
   echo "WARN: phone provider is disabled and fallback mode is active." >&2
+fi
+
+if [[ "$REQUIRE_GOOGLE_LOWER" == "true" && "$GOOGLE_ENABLED" != "true" ]]; then
+  echo "FAIL: external.google must be true while VITE_REQUIRE_GOOGLE_AUTH=true." >&2
+  exit 2
 fi
 
 echo "PASS: Auth settings match current runtime policy."

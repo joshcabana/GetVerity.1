@@ -22,12 +22,14 @@ This document is the canonical source of truth for project targeting. If any fil
 
 - Strict mode: `VITE_REQUIRE_PHONE_VERIFICATION=true`
 - Temporary incident fallback only: `VITE_REQUIRE_PHONE_VERIFICATION=false`
+- Optional social login enforcement: `VITE_REQUIRE_GOOGLE_AUTH=true`
 
 Fallback mode is allowed only while phone OTP provider is unavailable. Re-enable strict mode as soon as provider health is restored.
 
 ## Manual Verification Commands
 
 ```bash
+npm run check:project-alignment
 npm run check:auth-settings
 ```
 

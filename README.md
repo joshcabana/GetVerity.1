@@ -132,6 +132,12 @@ npm run build
 
 # Validate Supabase auth settings against runtime policy
 npm run check:auth-settings
+
+# Validate project target alignment
+npm run check:project-alignment
+
+# Guard against hardcoded Supabase credentials
+npm run check:no-hardcoded-supabase
 ```
 
 ### Auth Provider Policy
@@ -140,4 +146,5 @@ npm run check:auth-settings
 - Canonical source-of-truth matrix: [docs/environment-matrix.md](docs/environment-matrix.md)
 - Strict mode default: `VITE_REQUIRE_PHONE_VERIFICATION=true`
 - Temporary incident fallback: set `VITE_REQUIRE_PHONE_VERIFICATION=false` and redeploy
+- Optional Google login enforcement: `VITE_REQUIRE_GOOGLE_AUTH=true`
 - Full runbook: [docs/auth-unblock-runbook.md](docs/auth-unblock-runbook.md)

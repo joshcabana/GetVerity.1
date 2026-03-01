@@ -32,10 +32,9 @@ const Profile = () => {
 
   const updateNameMutation = useMutation({
     mutationFn: async (newName: string) => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ display_name: newName })
-        .eq("user_id", user!.id);
+      const { error } = await supabase.rpc("update_my_profile", {
+        p_display_name: newName,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -70,15 +69,14 @@ const Profile = () => {
 
       const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
 
-      const { error: updateErr } = await supabase
-        .from("profiles")
-        .update({ avatar_url: `${urlData.publicUrl}?t=${Date.now()}` })
-        .eq("user_id", user.id);
+      const avatarUrlWithVersion = `${urlData.publicUrl}?t=${Date.now()}`;
+      const { error: updateErr } = await supabase.rpc("update_my_profile", {
+        p_avatar_url: avatarUrlWithVersion,
+      });
       if (updateErr) throw updateErr;
 
-      const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       toast.success("Avatar updated");
-      setLocalAvatarUrl(newUrl);
+      setLocalAvatarUrl(avatarUrlWithVersion);
     } catch {
       toast.error("Failed to upload avatar");
     } finally {

@@ -1,5 +1,27 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
+import ConfigErrorScreen from "@/components/ConfigErrorScreen";
+import { getMissingRuntimeEnvKeys } from "@/lib/runtimeEnv";
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("[Verity] Root element #root is missing.");
+}
+
+const root = createRoot(rootElement);
+
+const bootstrap = async () => {
+  const missingKeys = getMissingRuntimeEnvKeys();
+  if (missingKeys.length > 0) {
+    root.render(<ConfigErrorScreen missingKeys={missingKeys} />);
+    return;
+  }
+
+  const { default: App } = await import("./App.tsx");
+  root.render(<App />);
+};
+
+bootstrap().catch((error) => {
+  console.error("[Verity] Failed to bootstrap app:", error);
+  root.render(<ConfigErrorScreen missingKeys={["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"]} />);
+});

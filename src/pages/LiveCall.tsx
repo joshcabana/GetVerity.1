@@ -278,11 +278,10 @@ const LiveCall = () => {
     setMyChoice(choice);
     setPhase("waiting");
 
-    const updateField = myRole === "caller" ? "caller_decision" : "callee_decision";
-    const { error } = await supabase
-      .from("calls")
-      .update({ [updateField]: choice })
-      .eq("id", callId);
+    const { error } = await supabase.rpc("submit_call_decision", {
+      p_call_id: callId,
+      p_decision: choice,
+    });
 
     if (error) {
       toast.error("Failed to record choice. Please try again.");

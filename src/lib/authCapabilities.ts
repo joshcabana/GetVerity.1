@@ -3,6 +3,7 @@ export interface AuthCapabilities {
   mailerAutoconfirm: boolean;
   emailEnabled: boolean;
   phoneEnabled: boolean;
+  googleEnabled: boolean;
 }
 
 interface AuthSettingsResponse {
@@ -11,6 +12,7 @@ interface AuthSettingsResponse {
   external?: {
     email?: boolean;
     phone?: boolean;
+    google?: boolean;
   };
 }
 
@@ -28,6 +30,7 @@ export const mapAuthSettingsToCapabilities = (settings: AuthSettingsResponse): A
     mailerAutoconfirm: settings.mailer_autoconfirm ?? false,
     emailEnabled: settings.external?.email ?? false,
     phoneEnabled: settings.external?.phone ?? false,
+    googleEnabled: settings.external?.google ?? false,
   };
 };
 

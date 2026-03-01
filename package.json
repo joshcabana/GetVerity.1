@@ -6,13 +6,17 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node ./scripts/require-env.mjs",
     "build": "vite build",
+    "prebuild:dev": "node ./scripts/require-env.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:auth-settings": "./scripts/check-auth-settings.sh"
+    "check:auth-settings": "./scripts/check-auth-settings.sh",
+    "check:project-alignment": "./scripts/check-project-alignment.sh",
+    "check:no-hardcoded-supabase": "./scripts/check-no-hardcoded-supabase.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

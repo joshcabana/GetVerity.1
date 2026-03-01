@@ -26,11 +26,17 @@ Project: `itdzdyhdkbcxbqgukzis`
 - Enable provider.
 - Set Twilio Account SID, Auth Token, Message Service SID.
 
+3. `Authentication -> Providers -> Google`
+- Enable provider.
+- Set Google OAuth client ID and secret.
+- Ensure redirect URI is registered in Google Cloud Console.
+
 ## 3) Hard Validation
 
 Run:
 
 ```bash
+npm run check:project-alignment
 npm run check:auth-settings
 ```
 
@@ -38,6 +44,7 @@ Expected:
 - `disable_signup=false`
 - `external.email=true`
 - `external.phone=true` when `VITE_REQUIRE_PHONE_VERIFICATION=true`
+- `external.google=true` when `VITE_REQUIRE_GOOGLE_AUTH=true`
 
 ## 4) Fallback Policy
 

@@ -23,6 +23,7 @@ describe("auth capabilities helpers", () => {
       mailerAutoconfirm: false,
       emailEnabled: true,
       phoneEnabled: false,
+      googleEnabled: false,
     });
   });
 });
