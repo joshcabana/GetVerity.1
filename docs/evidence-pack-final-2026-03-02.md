@@ -32,6 +32,9 @@ Permanent ownership migration from Lovable-managed Supabase to user-owned Supaba
 7. Merged PR #20 into `main`.
    - Merge commit: `8377513feebcf76ac70381444e5cf3d417233907`
    - `origin/main` now includes user-owned Supabase cutover docs/config.
+8. Merged PR #21 QA hardening updates into `main`.
+   - Merge commit: `c4482aa`
+   - Includes refreshed generated Supabase types, `featureFlags` static import hardening, and lint warning debt cleanup in eslint config.
 
 ## Verification Outputs
 
@@ -53,7 +56,7 @@ Permanent ownership migration from Lovable-managed Supabase to user-owned Supaba
 - PASS
 
 ### Local quality gates
-- `npm run lint` -> PASS (0 errors, warnings only)
+- `npm run lint` -> PASS (0 errors, 0 warnings)
 - `npm run test -- --run` -> PASS (25/25)
 - `npm run build` -> PASS
 - `npx tsc -b` -> PASS
