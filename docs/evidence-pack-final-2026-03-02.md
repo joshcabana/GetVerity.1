@@ -29,6 +29,9 @@ Permanent ownership migration from Lovable-managed Supabase to user-owned Supaba
 6. Opened PR with these repo updates:
    - PR: `https://github.com/joshcabana/spark-echo-verity/pull/20`
    - Branch: `codex/user-owned-supabase-cutover-20260302`
+7. Merged PR #20 into `main`.
+   - Merge commit: `8377513feebcf76ac70381444e5cf3d417233907`
+   - `origin/main` now includes user-owned Supabase cutover docs/config.
 
 ## Verification Outputs
 
@@ -63,6 +66,9 @@ Permanent ownership migration from Lovable-managed Supabase to user-owned Supaba
 - DNS A records:
   - `getverity.com`: `15.197.148.33`, `3.33.130.190` (legacy)
   - `getverity.com.au`: `185.158.133.1`
+- Post-merge note:
+  - frontend auto-publish has not occurred yet (bundle hash unchanged after merge)
+  - browser automation is currently unavailable in this environment (`Playwright transport closed`)
 
 ### New backend function check (owned project)
 Direct call to `https://lixgbpgemcpdbjzhjknf.supabase.co/functions/v1/get-feature-flags`
