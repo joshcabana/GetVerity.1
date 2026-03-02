@@ -117,11 +117,17 @@ const Chat = () => {
   const handleReport = useCallback(async () => {
     if (!user || !partnerId) return;
     setMenuOpen(false);
-    await supabase.from("reports").insert({
+    const reason = "Reported from chat".slice(0, 1000).trim();
+    if (!reason) return;
+    const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_user_id: partnerId,
-      reason: "Reported from chat",
+      reason,
     });
+    if (error) {
+      toast.error("Failed to submit report.");
+      return;
+    }
     toast.success("Report submitted.");
   }, [user, partnerId]);
 

@@ -338,12 +338,21 @@ const LiveCall = () => {
   // Handle report
   const handleReport = useCallback(async (reason: string) => {
     if (!user || !partnerId || !callId) return;
-    await supabase.from("reports").insert({
+    const sanitizedReason = reason.slice(0, 1000).trim();
+    if (!sanitizedReason) {
+      toast.error("Please provide a reason for the report.");
+      return;
+    }
+    const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_user_id: partnerId,
       call_id: callId,
-      reason,
+      reason: sanitizedReason,
     });
+    if (error) {
+      toast.error("Failed to submit report.");
+      return;
+    }
     toast.success("Report submitted. Thank you for keeping Verity safe.");
     setReportOpen(false);
   }, [user, partnerId, callId]);

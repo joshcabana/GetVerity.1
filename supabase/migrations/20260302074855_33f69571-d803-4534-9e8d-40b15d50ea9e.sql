@@ -1,0 +1,1 @@
+ALTER TABLE public.reports ADD CONSTRAINT reason_length CHECK (length(reason) <= 1000 AND length(reason) >= 1);
