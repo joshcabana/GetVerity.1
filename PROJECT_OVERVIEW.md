@@ -48,7 +48,7 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | `drops` | Scheduled speed-dating events: title, region, timezone, capacity, duration, Friendfluence flag |
 | `drop_rsvps` | User RSVPs for drops with check-in status and friend invite codes |
 | `matchmaking_queue` | Atomic queue entries: user/room/drop, status tracking, matched call reference |
-| `calls` | Video call records: caller/callee, Agora channel, start/end times, duration, Spark/Pass decisions, mutual spark flag |
+| `calls` | Video call records: caller/callee, Agora channel, start/end times, duration, Spark/Pass decisions, mutual spark flag, cloud recording metadata (resource_id, sid, url) |
 | `sparks` | Mutual spark connections: linked call, AI insight, voice intro URLs, expiry, archive status |
 | `messages` | Post-spark chat: text and voice messages with read receipts |
 | `moderation_flags` | AI and human moderation flags: flagged user, call, reason, AI confidence, clip URL, action taken |
@@ -62,8 +62,9 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | `push_subscriptions` | Web push notification subscriptions: endpoint, keys |
 | `guardian_alerts` | Guardian Net safe-call signals logged during live calls |
 | `app_config` | Runtime configuration (auth policy, feature flags) |
+| `chemistry_replays` | 8-second anonymized highlight reels from mutual-spark calls, linked to sparks and calls |
 
-### 2.3 Edge Functions (16)
+### 2.3 Edge Functions (19)
 
 | Function | Responsibility |
 |----------|---------------|
@@ -83,6 +84,9 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | `generate-vapid-keys` | Generates VAPID key pairs for Web Push notification setup |
 | `get-feature-flags` | Returns runtime feature flags from `app_config` (phone verification mode, etc.) |
 | `aggregate-stats` | Aggregates platform metrics into `platform_stats` table (scheduled cron job) |
+| `start-cloud-recording` | Acquires and starts Agora Cloud Recording for a live call channel; stores resource_id and sid on the call record |
+| `stop-cloud-recording` | Stops Agora Cloud Recording and retrieves the recording URL; updates the call record |
+| `generate-replay` | Creates chemistry replay records from call recordings; links recording URL and marks status |
 
 ### 2.4 Phased Timeline
 
@@ -92,7 +96,7 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | **Phase 2 — Safety & Infrastructure** | Complete | AI moderation wired to real LLM with live-call transcript fallback, matchmaking queue with block filtering, selfie verification, admin dashboard (moderation queue + appeals inbox + analytics), transparency page, appeals flow, security hardening, Profile page |
 | **Phase 3 — Payments & Premium** | Complete | Token shop with 3 packs (10/15/30 tokens), Verity Pass subscriptions (monthly/annual), Stripe Checkout + Customer Portal + Webhook handler with idempotency and customer-ID mapping |
 | **Phase 4 — Innovations** | Complete | Voice Intro (record during call, replay in chat via signed URLs), Guardian Net (server-side alert logging to `guardian_alerts`), Spark Reflection AI insight, Friendfluence Drops with invite links |
-| **Phase 5 — Operations & Polish** | Complete | Push notifications, automated platform stats aggregation, JSON-LD SEO, unread message badges, 33 passing tests across 9 suites |
+| **Phase 5 — Operations & Polish** | Complete | Push notifications, automated platform stats aggregation, JSON-LD SEO, unread message badges, Chemistry Replay Vault (table + UI + edge functions), Agora Cloud Recording integration, bundle optimization via manualChunks, 33 passing tests across 11 suites |
 
 ### 2.5 Sprint Schedule (relative to Feb 27, 2026)
 
@@ -154,18 +158,17 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 - Matchmaking atomicity
 - URL validation for edge functions
 
-**Performance:**
-- Lazy loading for 8 heavy routes: LiveCall, SparkHistory, Chat, TokenShop, Admin, Transparency, Appeal, Profile
+- Lazy loading for 10 heavy routes: Landing, LiveCall, SparkHistory, Chat, TokenShop, Admin, Transparency, Appeal, Profile, Friendfluence
 - Code splitting via React.lazy + Suspense with loading spinner fallback
+- Bundle optimization: `manualChunks` in Vite config splits Agora SDK, Framer Motion, Recharts, and React Router into independent vendor chunks
 
 ### 3.2 In Progress
 
 - **AI moderation threshold tuning** — The `ai-moderate` function is invoked from active calls with transcript snippets where browser speech APIs are available. Current focus is threshold tuning and fallback quality.
-- **Trust gate enforcement** — Phone/selfie/safety-pledge verification signals are checked in lobby matchmaking but require complete onboarding flow to properly gate Drop participation.
+- **Agora Cloud Recording credentials** — `start-cloud-recording` and `stop-cloud-recording` edge functions are deployed but require `AGORA_CUSTOMER_KEY` and `AGORA_CUSTOMER_SECRET` to operate.
 
 ### 3.3 Upcoming
 
-- **Chemistry Replay Vault** — 8-second anonymized highlight reel from mutual-spark calls (Verity Pass exclusive)
 - **Granular drop scheduling** — More control over drop timing, region targeting, and capacity management
 
 ---
@@ -190,7 +193,7 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | **Webhook idempotency** | Added `stripe_processed_events` table with primary key on `event_id` to prevent duplicate token credits or subscription updates. |
 | **Agora token security** | Replaced client-side stubs with `RtcTokenBuilder.buildTokenWithUid` on the server, issuing tokens with 10-minute expiry only after verifying the requesting user is a participant in the call. |
 | **Open redirect risk** | Customer portal `return_url` is validated via strict URL parsing + exact origin allowlist before creating Stripe Billing Portal sessions. |
-| **Bundle performance** | Added lazy loading via `React.lazy` + `Suspense` for 8 heavy routes (LiveCall, Admin, TokenShop, SparkHistory, Chat, Transparency, Appeal, Profile). |
+| **Bundle performance** | Added lazy loading via `React.lazy` + `Suspense` for 10 routes and `manualChunks` in Vite config to split heavy vendor dependencies (Agora SDK, Framer Motion, Recharts, React Router) into independent chunks. |
 | **Test coverage gap** | Resolved: 9 test suites with 33 passing tests covering auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, and URL validation. |
 | **Stats population** | Resolved: `aggregate-stats` edge function deployed as automated cron; Transparency and Admin pages now read live data from `platform_stats`. |
 
@@ -214,12 +217,12 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 | Metric | Value |
 |--------|-------|
 | Frontend pages | 14 |
-| UI components | 91+ across 8 directories |
-| Edge functions | 16 |
-| Database tables | 20+ |
+| UI components | 93+ across 8 directories |
+| Edge functions | 19 |
+| Database tables | 21+ |
 | Custom enums | 6 (`app_role`, `appeal_status`, `call_status`, `moderation_action`, `spark_decision`, `subscription_tier`) |
 | RPC functions | 13 (`claim_match_candidate`, `get_drop_rsvp_count`, `has_role`, `is_spark_member`, `submit_call_decision`, `update_my_profile`, `shares_spark_with`, `get_spark_partner_profile`, `check_mutual_spark`, `notify_new_message`, `notify_new_spark`, `handle_new_user`, `update_updated_at_column`) |
-| Test suites | 9 (33 passing tests) |
+| Test suites | 11 (33 passing tests) |
 | Deployment target | Lovable.app (frontend) + Supabase Cloud (backend) |
 
 ---
@@ -228,6 +231,6 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| `npm run test` | Passes | 33 tests passing across 9 suites (auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, URL validation) |
-| `npm run build` | Passes | Vite production build succeeds with bundle-size warnings (>2.5 MB chunk) |
+| `npm run test` | Passes | 33 tests passing across 11 suites (auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, URL validation) |
+| `npm run build` | Passes | Vite production build succeeds; vendor chunks split via manualChunks |
 | `npm run lint` | Fails | Pre-existing TypeScript `any` usage and Fast Refresh warnings; no regressions from recent changes |

@@ -59,8 +59,11 @@
 - Automated platform stats aggregation (`aggregate-stats` edge function)
 - JSON-LD structured data on landing page for SEO
 - Unread message count badge on Sparks tab in bottom navigation
-- 9 test suites with 33 passing tests (auth, feature flags, routing, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity)
-- Production polish: forwardRef warning fixes, error boundaries, lazy loading
+- 11 test suites with 33 passing tests (auth, feature flags, routing, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity)
+- Production polish: error boundaries, lazy loading, bundle splitting via `manualChunks`
+- **Chemistry Replay Vault** — 8-second anonymized highlight reel from mutual-spark calls, gated behind Verity Pass subscription, with Vault tab on Sparks page
+- **Agora Cloud Recording** — Edge functions (`start-cloud-recording`, `stop-cloud-recording`) for server-side call recording; `generate-replay` extracts clips for the Vault
+- Bundle optimization: `manualChunks` splits Agora SDK, Framer Motion, Recharts, and React Router into independent vendor chunks
 
 ---
 
@@ -70,7 +73,7 @@
 - Full frontend (React + Vite + TypeScript + shadcn-ui + Tailwind CSS)
 - All core pages: Landing, Auth, Onboarding, Lobby, Live Call, Spark History, Chat, Token Shop, Admin, Transparency, Appeal, Profile, Friendfluence
 - Supabase backend: auth, profiles, drops, calls, sparks, messages, matchmaking queue, token transactions
-- 16 edge functions deployed (matchmaking, video auth, AI moderation, payments, appeals, admin, push notifications, stats aggregation, feature flags, VAPID key generation, friend invites, demo tokens)
+- 19 edge functions deployed (matchmaking, video auth, AI moderation, payments, appeals, admin, push notifications, stats aggregation, feature flags, VAPID key generation, friend invites, demo tokens, cloud recording start/stop, replay generation)
 - 13 RPC functions (`claim_match_candidate`, `get_drop_rsvp_count`, `has_role`, `is_spark_member`, `submit_call_decision`, `update_my_profile`, `shares_spark_with`, `get_spark_partner_profile`, `check_mutual_spark`, `notify_new_message`, `notify_new_spark`, `handle_new_user`, `update_updated_at_column`)
 - Agora real-token generation with 10-minute expiry (using `agora-token` npm package)
 - Security hardening: auth on all edge functions, price-ID allowlist, origin allowlist, idempotent webhooks
@@ -83,15 +86,15 @@
 - Platform stats aggregation cron (automated daily via `aggregate-stats`)
 - JSON-LD structured data on landing page
 - Unread message count badge on Sparks tab
-- 9 test suites, 33 passing tests (auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, URL validation)
-- Production polish: forwardRef warning fixes across all landing components
+- 11 test suites, 33 passing tests (auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, URL validation)
+- Production polish: error boundaries, lazy loading, bundle splitting via manualChunks
+- Chemistry Replay Vault: `chemistry_replays` table, ReplayVault/ReplayCard components, Vault tab on Sparks page, `generate-replay` edge function
+- Agora Cloud Recording: `start-cloud-recording` and `stop-cloud-recording` edge functions, recording metadata columns on `calls` table
 
 ### In Progress 🔄
 - Tuning AI moderation thresholds and browser transcript coverage fallbacks
-- Chemistry Replay Vault (8-second anonymized highlight reel, Verity Pass gated)
-
+- Configuring Agora REST API credentials (`AGORA_CUSTOMER_KEY`, `AGORA_CUSTOMER_SECRET`) for live cloud recording
 ### Upcoming 📋
-- Chemistry Replay Vault (Verity Pass gated)
 - Granular drop scheduling (region targeting, capacity management)
 
 ---
@@ -104,7 +107,7 @@
 | **Stripe webhook idempotency** — duplicate webhook deliveries could credit tokens or subscriptions multiple times | Added `stripe_processed_events` table (primary key on `event_id`); duplicate events return `{ received: true }` immediately |
 | **Agora stub tokens** — early implementation returned placeholder tokens, breaking real calls | Replaced with `RtcTokenBuilder.buildTokenWithUid` (10-minute expiry); call-participation verified server-side before token is issued |
 | **Open redirect in customer portal** — `return_url` was accepted verbatim from client, enabling redirect to arbitrary sites | Replaced with strict URL parsing + exact-origin allowlist validation; falls back to `/tokens` when invalid |
-| **forwardRef console warnings** — React internals attaching refs to lazy-loaded function components caused noisy console warnings | Wrapped all landing components with `React.forwardRef` and added `.displayName` |
+| **forwardRef console warnings** — React internals attaching refs to function components caused noisy dev-mode warnings | Initially wrapped components with `forwardRef`; reverted after it caused `Component is not a function` runtime crashes with Vite HMR. Remaining warnings are cosmetic, from third-party libraries (next-themes, react-helmet-async) |
 | **Test coverage gap** — Only 1 placeholder test existed at launch | Resolved: 9 test suites with 33 passing tests covering auth, feature flags, routing, components, and edge function logic |
 | **Stats population** — Transparency and Admin pages showed zero values | Resolved: `aggregate-stats` edge function deployed as automated cron job |
 | **AI moderation stub** — Random-score stub replaced with real LLM (Gemini 2.5 Flash Lite) with structured tool-use and policy-based risk scoring | Now wired into live calls; threshold tuning in progress |
