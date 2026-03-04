@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import VerityLogo from "@/components/VerityLogo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { label: "How it works", to: "/how-it-works" },
@@ -47,6 +48,7 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <ThemeToggle />
           <Link
             to="/auth"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -98,11 +100,14 @@ const Navbar = () => {
               >
                 Sign in
               </Link>
-              <Link to="/auth" onClick={() => setMobileOpen(false)}>
-                <Button variant="gold" size="sm" className="w-full mt-2">
-                  RSVP for the next Drop
-                </Button>
-              </Link>
+              <div className="flex items-center justify-between mt-2">
+                <ThemeToggle />
+                <Link to="/auth" onClick={() => setMobileOpen(false)}>
+                  <Button variant="gold" size="sm">
+                    RSVP for the next Drop
+                  </Button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
