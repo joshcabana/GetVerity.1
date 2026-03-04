@@ -19,7 +19,7 @@ const Footer = () => {
             <a href="#how-it-works" className="hover:text-foreground transition-colors">
               How it works
             </a>
-            <Link to="/transparency" className="hover:text-foreground transition-colors">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">
               Privacy
             </Link>
             <Link to="/auth" className="hover:text-primary transition-colors">

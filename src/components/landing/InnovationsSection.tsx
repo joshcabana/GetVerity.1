@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MessageCircle, Mic, Shield, Film, Users } from "lucide-react";
+import { MessageCircle, Mic, Shield, Film } from "lucide-react";
 
 const innovations = [
   {
@@ -26,12 +26,6 @@ const innovations = [
     description:
       "A private 8-second anonymised highlight reel from your call — for your eyes only. Unlocked with Verity Pass. Never shared, never public.",
   },
-  {
-    icon: Users,
-    title: "Friendfluence Drops",
-    description:
-      "Invite a friend to join the same Drop. Shared courage, double the chance of connection. Because the best nights out start with a mate.",
-  },
 ];
 
 const InnovationsSection = () => {
@@ -46,10 +40,10 @@ const InnovationsSection = () => {
           className="text-center mb-16"
         >
           <span className="text-xs tracking-luxury uppercase text-primary/60 mb-4 block">
-            Tasteful innovations
+            What nobody else is building
           </span>
           <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-foreground">
-            Thoughtfully different.
+            Features that shouldn't need to be new.
           </h2>
         </motion.div>
 

@@ -85,22 +85,31 @@ const Transparency = () => {
         </motion.div>
 
         {/* Live Stats */}
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-16">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <h2 className="text-xs uppercase tracking-luxury text-muted-foreground">Platform Stats</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {liveStats.map((stat, i) => (
-              <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.05 }} className="rounded-lg border border-border bg-card p-5 text-center">
-                <stat.icon className="w-4 h-4 text-primary mx-auto mb-3" />
-                <p className="font-serif text-2xl text-foreground mb-1">{stat.value}</p>
-                <p className="text-[11px] text-muted-foreground/50">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
+        {liveStats.some((s) => s.value !== "0") ? (
+          <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-16">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <h2 className="text-xs uppercase tracking-luxury text-muted-foreground">Platform Stats</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {liveStats.map((stat, i) => (
+                <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + i * 0.05 }} className="rounded-lg border border-border bg-card p-5 text-center">
+                  <stat.icon className="w-4 h-4 text-primary mx-auto mb-3" />
+                  <p className="font-serif text-2xl text-foreground mb-1">{stat.value}</p>
+                  <p className="text-[11px] text-muted-foreground/50">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        ) : (
+          <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-16">
+            <div className="rounded-lg border border-border bg-card p-8 text-center">
+              <Activity className="w-5 h-5 text-primary mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Stats will appear once our first Drop goes live.</p>
+            </div>
+          </motion.section>
+        )}
 
         {/* Safety Report */}
         <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-16">
