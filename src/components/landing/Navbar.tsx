@@ -100,13 +100,14 @@ const Navbar = () => {
               >
                 Sign in
               </Link>
-              <Link to="/auth" onClick={() => setMobileOpen(false)}>
-                <Button variant="gold" size="sm" className="w-full mt-2">
-                  RSVP for the next Drop
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
+              <div className="flex items-center justify-between mt-2">
+                <ThemeToggle />
+                <Link to="/auth" onClick={() => setMobileOpen(false)}>
+                  <Button variant="gold" size="sm">
+                    RSVP for the next Drop
+                  </Button>
+                </Link>
+              </div>
         )}
       </AnimatePresence>
     </motion.nav>
