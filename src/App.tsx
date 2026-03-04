@@ -29,6 +29,7 @@ const Appeal = lazy(() => import("./pages/Appeal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Friendfluence = lazy(() => import("./pages/Friendfluence"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const About = lazy(() => import("./pages/About"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,6 +72,7 @@ const App = () => (
                     <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
                     <Route path="/transparency" element={<Transparency />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/lander" element={<Navigate to="/" replace />} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/appeal" element={<ProtectedRoute><Appeal /></ProtectedRoute>} />

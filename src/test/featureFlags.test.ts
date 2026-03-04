@@ -17,12 +17,15 @@ describe("parseFeatureFlagsPayload", () => {
   });
 
   it("maps valid payload to camelCase FeatureFlags", () => {
+    const defaults = { enableReplayVault: true, enableFriendfluence: true, enableVoiceIntro: true, enableGuardianNet: true };
     expect(parseFeatureFlagsPayload({ require_phone_verification: false })).toEqual({
       requirePhoneVerification: false,
+      ...defaults,
     });
 
     expect(parseFeatureFlagsPayload({ require_phone_verification: true })).toEqual({
       requirePhoneVerification: true,
+      ...defaults,
     });
   });
 
@@ -42,6 +45,10 @@ describe("parseFeatureFlagsPayload", () => {
 
     await expect(fetchFeatureFlags()).resolves.toEqual({
       requirePhoneVerification: false,
+      enableReplayVault: true,
+      enableFriendfluence: true,
+      enableVoiceIntro: true,
+      enableGuardianNet: true,
     });
   });
 
@@ -53,6 +60,10 @@ describe("parseFeatureFlagsPayload", () => {
 
     await expect(fetchFeatureFlags()).resolves.toEqual({
       requirePhoneVerification: false,
+      enableReplayVault: true,
+      enableFriendfluence: true,
+      enableVoiceIntro: true,
+      enableGuardianNet: true,
     });
   });
 });
