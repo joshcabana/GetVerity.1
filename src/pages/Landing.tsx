@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import InnovationsSection from "@/components/landing/InnovationsSection";
 import CTASection from "@/components/landing/CTASection";
@@ -37,6 +38,7 @@ const Landing = () => {
       <Navbar />
       <HeroSection />
       <StatsSection />
+      <HowItWorksSection />
       <FeaturesSection />
       <InnovationsSection />
       <CTASection />

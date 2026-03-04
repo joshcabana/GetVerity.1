@@ -18,7 +18,7 @@ const features = [
     icon: Brain,
     title: "Live Safety Checks",
     description:
-      "During live calls, Verity runs safety checks using transcript snippets (where browser support exists) and call metadata. No raw call video is stored.",
+      "During live calls, Verity runs safety checks using transcript snippets and call metadata. No raw call video is stored.",
   },
   {
     icon: Compass,
@@ -42,7 +42,7 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section id="how-it-works" className="py-24 md:py-32">
+    <section id="features" className="py-24 md:py-32">
       <div className="container max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
