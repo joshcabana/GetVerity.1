@@ -1,8 +1,8 @@
 # Verity — Comprehensive Project Examination
 
-*Last updated: March 4, 2026*
+*Last updated: March 5, 2026*
 
-> **Beta-Ready** — All five phases complete. Voice Intro, Guardian Net, Spark Reflection, push notifications, and platform stats automation are all wired end-to-end. Ready for 50–100 user pilot.
+> **Production-Ready** — All five phases complete. All external credentials configured.
 
 ---
 
@@ -161,10 +161,11 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 - Lazy loading for 10 heavy routes: Landing, LiveCall, SparkHistory, Chat, TokenShop, Admin, Transparency, Appeal, Profile, Friendfluence
 - Code splitting via React.lazy + Suspense with loading spinner fallback
 - Bundle optimization: `manualChunks` in Vite config splits Agora SDK, Framer Motion, Recharts, and React Router into independent vendor chunks
+- **Agora Cloud Recording credentials** — `AGORA_CUSTOMER_KEY` and `AGORA_CUSTOMER_SECRET` configured in Lovable Cloud Secrets (March 4, 2026)
 
 ### 3.2 In Progress
 
-- **Agora Cloud Recording credentials** — `start-cloud-recording` and `stop-cloud-recording` edge functions are deployed but require `AGORA_CUSTOMER_KEY` and `AGORA_CUSTOMER_SECRET` to operate.
+None — all items complete.
 
 ### 3.3 Upcoming
 
