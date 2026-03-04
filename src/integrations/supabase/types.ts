@@ -1053,6 +1053,7 @@ export type Database = {
           candidate_user_id: string
         }[]
       }
+      delete_my_account: { Args: never; Returns: undefined }
       get_drop_rsvp_count: { Args: { _drop_id: string }; Returns: number }
       get_spark_partner_profile: {
         Args: { _partner_user_id: string }
