@@ -195,6 +195,60 @@ export type Database = {
           },
         ]
       }
+      chemistry_vault_items: {
+        Row: {
+          call_id: string
+          created_at: string
+          highlights: Json
+          id: string
+          partner_user_id: string
+          reflection_id: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          user_notes: string | null
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          highlights?: Json
+          id?: string
+          partner_user_id: string
+          reflection_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          user_notes?: string | null
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          highlights?: Json
+          id?: string
+          partner_user_id?: string
+          reflection_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          user_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chemistry_vault_items_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chemistry_vault_items_reflection_id_fkey"
+            columns: ["reflection_id"]
+            isOneToOne: false
+            referencedRelation: "spark_reflections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drop_rsvps: {
         Row: {
           checked_in: boolean
@@ -728,6 +782,47 @@ export type Database = {
           metadata?: Json | null
         }
         Relationships: []
+      }
+      spark_reflections: {
+        Row: {
+          ai_reflection: string | null
+          call_id: string
+          created_at: string
+          feeling_score: number | null
+          id: string
+          liked_text: string | null
+          next_time_text: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_reflection?: string | null
+          call_id: string
+          created_at?: string
+          feeling_score?: number | null
+          id?: string
+          liked_text?: string | null
+          next_time_text?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_reflection?: string | null
+          call_id?: string
+          created_at?: string
+          feeling_score?: number | null
+          id?: string
+          liked_text?: string | null
+          next_time_text?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_reflections_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sparks: {
         Row: {

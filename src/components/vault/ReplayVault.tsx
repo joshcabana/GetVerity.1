@@ -1,6 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import ReplayCard from "./ReplayCard";
@@ -10,12 +9,12 @@ import { toast } from "sonner";
 
 interface VaultItem {
   id: string;
-  spark_id: string;
-  status: string;
-  duration_seconds: number;
+  call_id: string;
+  title: string | null;
+  user_notes: string | null;
+  ai_reflection: string | null;
+  feeling_score: number | null;
   created_at: string;
-  user_a: string;
-  user_b: string;
   partner_name: string;
 }
 
@@ -33,23 +32,46 @@ const ReplayVault = () => {
     queryKey: ["chemistry-vault", user?.id],
     queryFn: async () => {
       if (!user) return [];
+
+      // Query vault items with reflection data
       const { data, error } = await supabase
-        .from("chemistry_replays")
-        .select("id, spark_id, status, duration_seconds, created_at, user_a, user_b")
-        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
+        .from("chemistry_vault_items" as any)
+        .select("id, call_id, title, user_notes, reflection_id, partner_user_id, created_at")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+
       if (error) throw error;
+      const items = (data || []) as any[];
+
+      // Get reflection data for items that have one
+      const reflectionIds = items
+        .map((i: any) => i.reflection_id)
+        .filter(Boolean);
+
+      let reflectionMap: Record<string, { ai_reflection: string | null; feeling_score: number | null }> = {};
+      if (reflectionIds.length > 0) {
+        const { data: reflections } = await supabase
+          .from("spark_reflections" as any)
+          .select("id, ai_reflection, feeling_score")
+          .in("id", reflectionIds);
+
+        if (reflections) {
+          (reflections as any[]).forEach((r: any) => {
+            reflectionMap[r.id] = {
+              ai_reflection: r.ai_reflection,
+              feeling_score: r.feeling_score,
+            };
+          });
+        }
+      }
 
       // Fetch partner names
-      const partnerIds = (data || []).map((r: Tables<"chemistry_replays">) =>
-        r.user_a === user.id ? r.user_b : r.user_a
-      );
-      const uniqueIds = [...new Set(partnerIds)];
+      const partnerIds = [...new Set(items.map((i: any) => i.partner_user_id))];
       const profileMap: Record<string, string> = {};
 
-      if (uniqueIds.length > 0) {
+      if (partnerIds.length > 0) {
         const results = await Promise.all(
-          uniqueIds.map((uid) =>
+          partnerIds.map((uid: string) =>
             supabase.rpc("get_spark_partner_profile", { _partner_user_id: uid })
           )
         );
@@ -62,17 +84,17 @@ const ReplayVault = () => {
         });
       }
 
-      return (data || []).map((r: Tables<"chemistry_replays">) => {
-        const partnerId = r.user_a === user.id ? r.user_b : r.user_a;
+      return items.map((item: any) => {
+        const ref = item.reflection_id ? reflectionMap[item.reflection_id] : null;
         return {
-          id: r.id,
-          spark_id: r.spark_id,
-          status: r.status,
-          duration_seconds: r.duration_seconds,
-          created_at: r.created_at,
-          user_a: r.user_a,
-          user_b: r.user_b,
-          partner_name: profileMap[partnerId] || `Spark ${r.id.slice(-4)}`,
+          id: item.id,
+          call_id: item.call_id,
+          title: item.title,
+          user_notes: item.user_notes,
+          ai_reflection: ref?.ai_reflection || null,
+          feeling_score: ref?.feeling_score || null,
+          created_at: item.created_at,
+          partner_name: profileMap[item.partner_user_id] || "Spark",
         };
       });
     },
@@ -80,7 +102,11 @@ const ReplayVault = () => {
   });
 
   const handleView = (item: VaultItem) => {
-    toast.info("Session insights: AI reflection and timestamps from your mutual Spark call.");
+    if (item.ai_reflection) {
+      toast.info(item.ai_reflection, { duration: 8000 });
+    } else {
+      toast.info("No AI reflection available for this session.");
+    }
   };
 
   const handleUpgrade = () => {
@@ -95,7 +121,7 @@ const ReplayVault = () => {
         </div>
         <h3 className="font-serif text-lg text-foreground mb-1">No vault entries yet</h3>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Session notes and AI insights are captured from mutual-spark calls. Keep connecting!
+          Session notes and AI insights are captured after each call. Keep connecting!
         </p>
       </div>
     );
@@ -108,7 +134,7 @@ const ReplayVault = () => {
           <Sparkles className="w-5 h-5 text-primary shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">Unlock your Chemistry Vault</p>
-            <p className="text-xs text-muted-foreground">Verity Pass subscribers can view session notes and AI insights.</p>
+            <p className="text-xs text-muted-foreground">Verity Pass subscribers can view full AI insights.</p>
           </div>
           <Button size="sm" onClick={handleUpgrade}>Upgrade</Button>
         </div>
@@ -116,7 +142,7 @@ const ReplayVault = () => {
       {vaultItems.map((item, i) => (
         <ReplayCard
           key={item.id}
-          replay={item}
+          item={item}
           index={i}
           isSubscriber={isSubscriber}
           onView={handleView}

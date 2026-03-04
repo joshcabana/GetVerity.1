@@ -14,6 +14,7 @@ import GuardianNet from "@/components/call/GuardianNet";
 import SafeExitModal from "@/components/call/SafeExitModal";
 import MutualSparkReveal from "@/components/call/MutualSparkReveal";
 import VoiceIntro from "@/components/call/VoiceIntro";
+import SparkReflection from "@/components/call/SparkReflection";
 import { useAgoraCall } from "@/hooks/useAgoraCall";
 import { isModerationFlagged } from "@/lib/moderation";
 
@@ -24,6 +25,7 @@ type CallPhase =
   | "deciding"
   | "waiting"
   | "mutual-spark"
+  | "reflection"
   | "voice-intro"
   | "no-spark"
   | "complete";
@@ -94,6 +96,7 @@ const LiveCall = () => {
   const [myRole, setMyRole] = useState<"caller" | "callee" | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [sparkId, setSparkId] = useState<string | null>(null);
+  const [wasMutualSpark, setWasMutualSpark] = useState(false);
 
   // Agora params
   const [agoraParams, setAgoraParams] = useState({ appId: "", token: null as string | null, uid: 0 });
@@ -311,6 +314,7 @@ const LiveCall = () => {
         .eq("id", callId)
         .single();
       if (data?.caller_decision && data?.callee_decision) {
+        setWasMutualSpark(!!data.is_mutual_spark);
         setPhase(data.is_mutual_spark ? "mutual-spark" : "no-spark");
       }
     };
@@ -326,6 +330,7 @@ const LiveCall = () => {
       }, (payload) => {
         const row = payload.new as CallRecord;
         if (row.caller_decision && row.callee_decision) {
+          setWasMutualSpark(!!row.is_mutual_spark);
           setPhase(row.is_mutual_spark ? "mutual-spark" : "no-spark");
         }
       })
@@ -363,7 +368,7 @@ const LiveCall = () => {
     setReportOpen(false);
   }, [user, partnerId, callId]);
 
-  // Navigate to spark after mutual spark
+  // Navigate to reflection after mutual spark reveal
   const handleMutualSparkContinue = useCallback(async () => {
     if (!callId) {
       navigate("/sparks");
@@ -377,11 +382,18 @@ const LiveCall = () => {
       .single();
     if (spark) {
       setSparkId(spark.id);
+    }
+    setPhase("reflection");
+  }, [callId, navigate]);
+
+  // After reflection, go to voice intro (mutual) or lobby (no spark)
+  const handleReflectionContinue = useCallback(() => {
+    if (wasMutualSpark && sparkId) {
       setPhase("voice-intro");
     } else {
-      navigate("/sparks");
+      navigate("/lobby");
     }
-  }, [callId, navigate]);
+  }, [wasMutualSpark, sparkId, navigate]);
 
   const handleVoiceIntroComplete = useCallback(() => {
     if (sparkId) {
@@ -519,6 +531,15 @@ const LiveCall = () => {
           <VoiceIntro sparkId={sparkId} onComplete={handleVoiceIntroComplete} />
         )}
 
+        {/* REFLECTION */}
+        {phase === "reflection" && callId && (
+          <SparkReflection
+            callId={callId}
+            wasMutual={wasMutualSpark}
+            onContinue={handleReflectionContinue}
+          />
+        )}
+
         {/* NO SPARK */}
         {phase === "no-spark" && (
           <motion.div key="no-spark" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -534,9 +555,9 @@ const LiveCall = () => {
             </motion.div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
               className="flex flex-col items-center gap-3">
-              <button onClick={() => navigate("/lobby")}
+              <button onClick={() => setPhase("reflection")}
                 className="text-sm text-primary hover:text-primary/80 transition-colors">
-                Return to lobby
+                Continue
               </button>
             </motion.div>
           </motion.div>

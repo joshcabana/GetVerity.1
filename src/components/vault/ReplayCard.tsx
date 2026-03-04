@@ -1,25 +1,29 @@
 import { motion } from "framer-motion";
-import { FileText, Lock } from "lucide-react";
+import { Brain, Lock, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 
+interface VaultItem {
+  id: string;
+  call_id: string;
+  title: string | null;
+  user_notes: string | null;
+  ai_reflection: string | null;
+  feeling_score: number | null;
+  created_at: string;
+  partner_name: string;
+}
+
 interface ReplayCardProps {
-  replay: {
-    id: string;
-    spark_id: string;
-    status: string;
-    duration_seconds: number;
-    created_at: string;
-    partner_name: string;
-  };
+  item: VaultItem;
   index: number;
   isSubscriber: boolean;
-  onView: (replay: ReplayCardProps["replay"]) => void;
+  onView: (item: VaultItem) => void;
   onUpgrade: () => void;
 }
 
-const ReplayCard = ({ replay, index, isSubscriber, onView, onUpgrade }: ReplayCardProps) => {
+const ReplayCard = ({ item, index, isSubscriber, onView, onUpgrade }: ReplayCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -35,21 +39,40 @@ const ReplayCard = ({ replay, index, isSubscriber, onView, onUpgrade }: ReplayCa
                 <Lock className="w-5 h-5 text-muted-foreground" />
               </button>
             ) : (
-              <button onClick={() => onView(replay)} className="w-full h-full flex items-center justify-center hover:bg-primary/10 rounded-lg transition-colors">
-                <FileText className="w-6 h-6 text-primary" />
+              <button onClick={() => onView(item)} className="w-full h-full flex items-center justify-center hover:bg-primary/10 rounded-lg transition-colors">
+                <Brain className="w-6 h-6 text-primary" />
               </button>
             )}
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground truncate">{replay.partner_name}</p>
+            <p className="font-medium text-foreground truncate">{item.partner_name}</p>
             <p className="text-xs text-muted-foreground">
-              {replay.duration_seconds}s moment · {formatDistanceToNow(new Date(replay.created_at), { addSuffix: true })}
+              {item.title || "Spark Session"} · {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             </p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">
-              Session notes & AI insights
-            </p>
+            {item.feeling_score && (
+              <div className="flex gap-0.5 mt-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star
+                    key={s}
+                    className={`w-3 h-3 ${
+                      s <= item.feeling_score! ? "text-primary fill-primary" : "text-muted-foreground/20"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+            {isSubscriber && item.ai_reflection && (
+              <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
+                {item.ai_reflection.slice(0, 80)}…
+              </p>
+            )}
+            {!isSubscriber && (
+              <p className="text-xs text-muted-foreground/60 mt-0.5">
+                AI insight available
+              </p>
+            )}
           </div>
 
           {/* CTA for non-subscribers */}
