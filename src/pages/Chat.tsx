@@ -92,6 +92,37 @@ const Chat = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sparkId]);
 
+  // Typing indicator via Realtime Broadcast
+  useEffect(() => {
+    if (!sparkId || !user) return;
+    const channel = supabase.channel(`typing-${sparkId}`);
+    channel
+      .on("broadcast", { event: "typing" }, (payload) => {
+        if (payload.payload?.user_id !== user.id) {
+          setPartnerTyping(true);
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setPartnerTyping(false), TYPING_TIMEOUT);
+        }
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [sparkId, user]);
+
+  const broadcastTyping = useCallback(() => {
+    if (!sparkId || !user) return;
+    const now = Date.now();
+    if (now - lastTypingBroadcast.current < 2000) return;
+    lastTypingBroadcast.current = now;
+    supabase.channel(`typing-${sparkId}`).send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: user.id },
+    });
+  }, [sparkId, user]);
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
