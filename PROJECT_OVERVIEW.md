@@ -128,8 +128,8 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 - **Appeal** — User-facing appeal submission with explanation and optional voice note upload
 - **Friendfluence** — Invite friends to Drops with generated invite links and activity ticker
 
-**Backend (16 edge functions, 13 RPC functions):**
-- All 16 edge functions deployed and functional with JWT authentication
+**Backend (19 edge functions, 13 RPC functions):**
+- All 19 edge functions deployed and functional with JWT authentication
 - Atomic matchmaking with block-list filtering (`find-match`)
 - Agora token issuance with server-side call participation verification (`agora-token`)
 - AI moderation via real LLM (Lovable AI Gateway / Gemini 2.5 Flash Lite) with structured tool-use and policy-based risk scoring (`ai-moderate`)
@@ -150,7 +150,7 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 - Protected routes with admin-role gating via `has_role` RPC function
 - Error boundary wrapping the application root
 
-**Testing (9 suites, 33 tests):**
+**Testing (11 suites, 33 tests):**
 - Auth capabilities and feature flag parsing
 - Route guarding and protected route behavior
 - Guardian Net component and Voice Intro banner
@@ -161,6 +161,8 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 - Lazy loading for 10 heavy routes: Landing, LiveCall, SparkHistory, Chat, TokenShop, Admin, Transparency, Appeal, Profile, Friendfluence
 - Code splitting via React.lazy + Suspense with loading spinner fallback
 - Bundle optimization: `manualChunks` in Vite config splits Agora SDK, Framer Motion, Recharts, and React Router into independent vendor chunks
+
+**Credentials & Infrastructure:**
 - **Agora Cloud Recording credentials** — `AGORA_CUSTOMER_KEY` and `AGORA_CUSTOMER_SECRET` configured in Lovable Cloud Secrets (March 4, 2026)
 
 ### 3.2 In Progress
@@ -180,7 +182,6 @@ None — all items complete.
 | Challenge | Severity | Details | Mitigation |
 |-----------|----------|---------|-----------|
 | **AI moderation threshold tuning** | Moderate | `ai-moderate` function is wired into live calls but thresholds need calibration with real user data. | Run pilot Drops to collect moderation events and tune risk-score thresholds based on actual call patterns. |
-
 | **Bundle size** | Moderate | Vite build emits a >2.5 MB chunk warning. | Lazy loading for 8 routes partially addresses this. Further code splitting of heavy dependencies (Agora SDK, Stripe.js) and tree-shaking review needed. |
 | **Environment secrets** | Operational | Agora App ID/Certificate, Stripe Secret Key/Webhook Secret, Supabase URL/Keys, and Lovable API Key are mandatory for call and payment flows. | Document required environment variables. Ensure deployment secrets are configured per environment (dev/staging/production) before pilots. |
 
