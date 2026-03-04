@@ -26,6 +26,7 @@ interface DropCardProps {
   onJoin: (drop: DropCardProps["drop"]) => void;
   trustComplete: boolean;
   index: number;
+  waitingCount?: number;
 }
 
 const DropCard = ({ drop, rsvpCount, isRsvpd, onRsvp, onCancel, onJoin, trustComplete, index }: DropCardProps) => {
