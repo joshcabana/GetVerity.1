@@ -108,6 +108,8 @@ const Navbar = () => {
                   </Button>
                 </Link>
               </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.nav>
