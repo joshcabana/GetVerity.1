@@ -48,6 +48,7 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+          <ThemeToggle />
           <Link
             to="/auth"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
