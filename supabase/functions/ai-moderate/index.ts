@@ -179,12 +179,17 @@ serve(async (req) => {
       try {
         const args = JSON.parse(toolCall.function.arguments);
         score = Math.max(0, Math.min(1, Number(args.score) || 0));
-        flagged = args.flagged === true || score >= 0.6;
+        flagged = args.flagged === true || score >= WARN_THRESHOLD;
         reason = args.reason || null;
         category = args.category || "safe";
       } catch (parseErr) {
         console.error("Failed to parse AI tool call:", parseErr);
       }
+    }
+
+    // If below safe threshold, skip DB writes entirely (false-positive guard)
+    if (score < SAFE_THRESHOLD) {
+      flagged = false;
     }
 
     // If flagged, record in moderation_flags
@@ -201,7 +206,7 @@ serve(async (req) => {
         call_id,
         risk_score: score,
         details: { category, reason, transcript_length: transcript.length },
-        action_taken: score >= 0.85 ? "auto_warn" : "flagged_for_review",
+        action_taken: score >= AUTO_ACTION_THRESHOLD ? "auto_warn" : "flagged_for_review",
       });
     }
 

@@ -28,6 +28,12 @@ const Navbar = () => {
       <div className="container max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <VerityLogo className="h-7 w-auto" linkTo="/" />
         <div className="flex items-center gap-4">
+          <Link
+            to="/about"
+            className="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            About
+          </Link>
           <a
             href="#how-it-works"
             className="hidden sm:block text-sm text-muted-foreground hover:text-foreground transition-colors"

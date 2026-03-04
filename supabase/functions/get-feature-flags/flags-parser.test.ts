@@ -3,11 +3,14 @@ import { FEATURE_FLAGS_CONFIG_INVALID, parseFeatureFlagsRecord } from "./flags-p
 
 describe("parseFeatureFlagsRecord", () => {
   it("parses a valid auth policy row", () => {
+    const defaults = { enable_replay_vault: true, enable_friendfluence: true, enable_voice_intro: true, enable_guardian_net: true };
     expect(parseFeatureFlagsRecord({ require_phone_verification: false })).toEqual({
       require_phone_verification: false,
+      ...defaults,
     });
     expect(parseFeatureFlagsRecord({ require_phone_verification: true })).toEqual({
       require_phone_verification: true,
+      ...defaults,
     });
   });
 
