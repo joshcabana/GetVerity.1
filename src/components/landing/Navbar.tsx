@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import VerityLogo from "@/components/VerityLogo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { label: "How it works", to: "/how-it-works" },
