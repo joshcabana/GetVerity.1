@@ -33,7 +33,7 @@ const SparkHistory = () => {
   const { user } = useAuth();
   const [active, setActive] = useState<Filter>("All");
 
-  const { data: sparks = [] } = useQuery<SparkWithPartner[]>({
+  const { data: sparks = [], isLoading: sparksLoading } = useQuery<SparkWithPartner[]>({
     queryKey: ["sparks", user?.id],
     queryFn: async () => {
       if (!user) return [];
