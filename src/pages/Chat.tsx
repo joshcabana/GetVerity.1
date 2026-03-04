@@ -11,6 +11,8 @@ import TypingIndicator from "@/components/chat/TypingIndicator";
 import ChatComposer from "@/components/chat/ChatComposer";
 import VoiceIntroBanner from "@/components/chat/VoiceIntroBanner";
 
+const TYPING_TIMEOUT = 3000;
+
 interface Message {
   id: string;
   sender_id: string;
