@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import SparkCard from "@/components/sparks/SparkCard";
 import SparkEmptyState from "@/components/sparks/SparkEmptyState";
+import SparkCardSkeleton from "@/components/sparks/SparkCardSkeleton";
 import BottomNav from "@/components/BottomNav";
 import ReplayVault from "@/components/vault/ReplayVault";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
