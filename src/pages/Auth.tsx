@@ -4,9 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Mail, Lock, UserPlus, LogIn } from "lucide-react";
 import VerityLogo from "@/components/VerityLogo";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+const AuthSkeleton = () => (
+  <div className="min-h-screen bg-background flex flex-col">
+    <div className="p-6">
+      <Skeleton className="h-5 w-16" />
+    </div>
+    <div className="flex-1 flex items-center justify-center px-6">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-10">
+          <Skeleton className="h-9 w-24 mx-auto mb-2" />
+          <Skeleton className="h-4 w-48 mx-auto" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full rounded-md" />
+          <Skeleton className="h-12 w-full rounded-md" />
+          <Skeleton className="h-12 w-full rounded-md" />
+        </div>
+        <Skeleton className="h-4 w-52 mx-auto mt-6" />
+      </div>
+    </div>
+  </div>
+);
+
+export { AuthSkeleton };
 
 const Auth = () => {
   const [email, setEmail] = useState("");

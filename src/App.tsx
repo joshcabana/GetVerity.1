@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import AppHeader from "@/components/AppHeader";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import { lazy, Suspense } from "react";
+import { Navigate } from "react-router-dom";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -70,7 +71,7 @@ const App = () => (
                     <Route path="/admin" element={<ProtectedRoute requireAdmin><Admin /></ProtectedRoute>} />
                     <Route path="/transparency" element={<Transparency />} />
                     <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/lander" element={<Landing />} />
+                    <Route path="/lander" element={<Navigate to="/" replace />} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/appeal" element={<ProtectedRoute><Appeal /></ProtectedRoute>} />
                     <Route path="/appeal/:flagId" element={<ProtectedRoute><Appeal /></ProtectedRoute>} />
