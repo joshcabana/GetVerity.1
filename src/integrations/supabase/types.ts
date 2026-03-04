@@ -1053,6 +1053,10 @@ export type Database = {
           candidate_user_id: string
         }[]
       }
+      deduct_tokens: {
+        Args: { p_cost: number; p_user_id: string }
+        Returns: undefined
+      }
       delete_my_account: { Args: never; Returns: undefined }
       get_drop_rsvp_count: { Args: { _drop_id: string }; Returns: number }
       get_spark_partner_profile: {
