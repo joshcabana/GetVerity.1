@@ -36,6 +36,8 @@ const Terms = lazy(() => import("./pages/Terms"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Drops = lazy(() => import("./pages/Drops"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const GreenRoom = lazy(() => import("./pages/GreenRoom"));
+const Settings = lazy(() => import("./pages/Settings"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +92,8 @@ const App = () => (
                     <Route path="/appeal" element={<ProtectedRoute><Appeal /></ProtectedRoute>} />
                     <Route path="/appeal/:flagId" element={<ProtectedRoute><Appeal /></ProtectedRoute>} />
                     <Route path="/drops/friendfluence" element={<ProtectedRoute><Friendfluence /></ProtectedRoute>} />
+                    <Route path="/green-room" element={<ProtectedRoute><GreenRoom /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
