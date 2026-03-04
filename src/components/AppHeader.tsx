@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
 
-const HIDDEN_ROUTES = ["/", "/call"];
+const HIDDEN_ROUTES = ["/", "/call", "/how-it-works", "/drops", "/safety", "/pricing", "/faq", "/terms"];
 
 const AppHeader = () => {
   const { pathname } = useLocation();
