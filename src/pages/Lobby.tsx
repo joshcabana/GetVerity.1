@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Shield, User, RefreshCw } from "lucide-react";
+import { Shield, User, RefreshCw, MonitorCheck } from "lucide-react";
 import VerityLogo from "@/components/VerityLogo";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -292,6 +292,13 @@ const Lobby = () => {
           <p className="text-muted-foreground max-w-lg leading-relaxed text-sm">
             Scheduled sessions by room. RSVP to reserve your spot — you'll be matched when the Drop goes live.
           </p>
+          <button
+            onClick={() => navigate("/green-room")}
+            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-secondary/50 hover:bg-secondary text-xs text-muted-foreground hover:text-foreground transition-all"
+          >
+            <MonitorCheck className="w-3.5 h-3.5" />
+            Check your setup
+          </button>
         </motion.div>
 
         <div className="mb-6">
