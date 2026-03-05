@@ -20,7 +20,6 @@ const LobbyRoomCard = ({
   onSelect,
   onEnter,
 }: LobbyRoomCardProps) => {
-  const occupancyPct = Math.round((room.occupancy / room.maxOccupancy) * 100);
   const Icon = room.icon;
 
   return (
