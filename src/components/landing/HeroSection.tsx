@@ -14,7 +14,7 @@ const trustChips = [
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-start justify-center overflow-hidden pt-28 md:pt-32">
       {/* Background image */}
       <div className="absolute inset-0">
         <img
@@ -74,7 +74,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link to="/auth">
+          <Link to="/auth?signup=true">
             <Button
               variant="gold"
               size="xl"

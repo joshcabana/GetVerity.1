@@ -87,7 +87,7 @@ const Drops = () => {
                       </span>
                     </div>
                   </div>
-                  <Link to="/auth" className="flex-shrink-0">
+                  <Link to="/auth?signup=true" className="flex-shrink-0">
                     <Button variant="gold-outline" size="sm" className="group">
                       RSVP
                       <ArrowRight className="ml-1 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -99,7 +99,7 @@ const Drops = () => {
           </div>
 
           <div className="text-center mt-16">
-            <Link to="/auth">
+            <Link to="/auth?signup=true">
               <Button variant="gold" size="xl" className="group">
                 Get verified to RSVP
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
