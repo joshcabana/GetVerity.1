@@ -374,6 +374,10 @@ const LiveCall = () => {
       navigate("/sparks");
       return;
     }
+
+    // Reveal identity (swap anonymized track for raw camera) on mutual spark
+    await revealIdentity();
+
     // Find the spark created by the trigger
     const { data: spark } = await supabase
       .from("sparks")
@@ -384,7 +388,7 @@ const LiveCall = () => {
       setSparkId(spark.id);
     }
     setPhase("reflection");
-  }, [callId, navigate]);
+  }, [callId, navigate, revealIdentity]);
 
   // After reflection, go to voice intro (mutual) or lobby (no spark)
   const handleReflectionContinue = useCallback(() => {
