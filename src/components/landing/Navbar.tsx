@@ -38,7 +38,7 @@ const Navbar = () => {
         <VerityLogo className="h-7 w-auto" linkTo="/" />
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.to}
