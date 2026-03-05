@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Crown, ArrowRight, Coins } from "lucide-react";
+import { Crown, ArrowRight, Coins, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Room } from "@/data/rooms";
 
