@@ -1,75 +1,42 @@
 
 
-## Phase 4: Spark Reflections DB, Chemistry Vault Items DB, Spark Reflection AI Edge Function, Text-Only Vault
+## Comprehensive Error & Placeholder Audit
 
-### 1. Database Migrations
+### Findings
 
-**Table: `spark_reflections`**
-- `id` uuid PK default `gen_random_uuid()`
-- `call_id` uuid NOT NULL (references calls)
-- `user_id` uuid NOT NULL (the user who submitted the reflection)
-- `feeling_score` integer (1-5, "How did that feel?")
-- `liked_text` text ("What did you like?")
-- `next_time_text` text ("What would you try next time?")
-- `ai_reflection` text (Gemini-generated reflection)
-- `created_at` timestamptz default now()
-- UNIQUE(call_id, user_id)
-- RLS: user can insert/select/update own only
+**1. Dead placeholder page: `src/pages/Index.tsx`**
+- Contains "Welcome to Your Blank App" boilerplate text
+- Not referenced in any route or import — completely dead code
+- **Action**: Delete the file
 
-**Table: `chemistry_vault_items`**
-- `id` uuid PK default `gen_random_uuid()`
-- `call_id` uuid NOT NULL
-- `user_id` uuid NOT NULL
-- `partner_user_id` uuid NOT NULL
-- `title` text
-- `highlights` jsonb default '[]'
-- `user_notes` text
-- `reflection_id` uuid (references spark_reflections)
-- `created_at` timestamptz default now()
-- `updated_at` timestamptz default now()
-- UNIQUE(call_id, user_id)
-- RLS: user can CRUD own only
+**2. Mock data files still present: `src/data/sparks.ts`**
+- Contains `mockSparks` and `mockMessages` with hardcoded fake users (Lena, James, Priya, Oliver)
+- Not imported anywhere in production code (all pages query the real database)
+- **Action**: Delete the file (keep only if tests depend on it — they don't)
 
-### 2. Edge Function: `spark-reflection-ai`
+**3. Stripe Price ID TODO comments (not blocking)**
+- `supabase/functions/create-checkout/index.ts` and `stripe-webhook/index.ts` both have prominent `PRODUCTION TODO` comment blocks saying "Replace each placeholder key below with the real Stripe Price ID"
+- However, the actual Price IDs (`price_1T6rXLC1O...`) are real Stripe format IDs, suggesting they've already been replaced. The TODO comments are now stale and misleading
+- **Action**: Remove the TODO comment blocks from both files, keeping just a brief inline note
 
-New edge function that:
-1. Accepts `{ call_id, feeling_score, liked_text, next_time_text }` from authenticated user
-2. Verifies user is a participant in the call
-3. Calls Lovable AI (gemini-2.5-flash) with a system prompt to generate a short reflection: strengths, one improvement, suggested theme
-4. Inserts into `spark_reflections` table
-5. Auto-creates a `chemistry_vault_items` entry for this call+user
-6. Returns the AI reflection text
+**4. Static room data: `src/data/rooms.ts`**
+- Contains 5 hardcoded rooms with static occupancy numbers (e.g., `occupancy: 142`)
+- These are frontend-only display values, not live data
+- **Action**: No code change required, but worth noting — occupancy should eventually come from the database. Low priority.
 
-### 3. Update `SparkReflection.tsx`
+**5. No other issues found**
+- All secrets (Agora, Stripe, VAPID, AI keys) are configured
+- No console errors
+- No hardcoded credentials in source
+- All `placeholder` attributes on form inputs are legitimate UX (not content placeholders)
+- `getverity.com.au` domain references are intentional (canonical URLs, contact emails)
+- `hasFakeCaret` in `input-otp.tsx` is a library internal, not a placeholder
 
-Currently shows hardcoded insights. Upgrade to:
-- Show post-session mini prompts: feeling score (1-5 stars), "What did you like?" textarea, "What would you try next time?" textarea
-- On submit: call `spark-reflection-ai` edge function
-- Display AI-generated reflection when returned
-- Keep "Continue" button behavior unchanged
+### Plan
 
-### 4. Update Vault Components
-
-**`ReplayVault.tsx`**: Switch from querying `chemistry_replays` to querying `chemistry_vault_items` joined with `spark_reflections`. Display text-only vault entries with partner names.
-
-**`ReplayCard.tsx`**: Show vault item title, AI reflection preview, user notes, and timestamps. No video references.
-
-### 5. Route + Config
-
-- Add `verify_jwt = false` for `spark-reflection-ai` in `supabase/config.toml`
-- No new routes needed (vault is already a tab in SparkHistory)
-
-### Files
-
-**Create:**
-- `supabase/functions/spark-reflection-ai/index.ts`
-
-**Edit:**
-- `src/components/call/SparkReflection.tsx` — interactive prompts + AI call
-- `src/components/vault/ReplayVault.tsx` — query `chemistry_vault_items`
-- `src/components/vault/ReplayCard.tsx` — display vault item data
-- `supabase/config.toml` — add function entry
-
-**DB Migration:**
-- Create `spark_reflections` and `chemistry_vault_items` tables with RLS
+| # | Task | Files |
+|---|------|-------|
+| 1 | Delete dead `Index.tsx` placeholder page | `src/pages/Index.tsx` |
+| 2 | Delete unused mock data file | `src/data/sparks.ts` |
+| 3 | Clean up stale PRODUCTION TODO comments in Stripe functions | `supabase/functions/create-checkout/index.ts`, `supabase/functions/stripe-webhook/index.ts` |
 
