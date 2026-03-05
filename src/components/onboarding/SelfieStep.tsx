@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Camera, ArrowRight, ShieldCheck, CheckCircle } from "lucide-react";
@@ -22,6 +22,14 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
   const streamRef = useRef<MediaStream | null>(null);
 
   const isNative = Capacitor.isNativePlatform();
+
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    };
+  }, []);
 
   // Native camera flow using Capacitor Camera plugin
   const takeNativeSelfie = useCallback(async () => {
@@ -89,8 +97,20 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
     }
   }, []);
 
+  const stopCameraStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
   const captureAndUpload = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current || !user) return;
+
+    // Guard against black frame if video isn't ready yet
+    if (videoRef.current.readyState < 2) {
+      toast.info("Camera is still warming up — try again in a moment.");
+      return;
+    }
+
     setUploading(true);
 
     const canvas = canvasRef.current;
@@ -162,7 +182,7 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
                 <><Camera className="mr-2 h-4 w-4" /> Take selfie now</>
               )}
             </Button>
-            <Button variant="outline" size="lg" onClick={() => onNext(false)} className="w-full text-muted-foreground">
+            <Button variant="outline" size="lg" onClick={() => { stopCameraStream(); onNext(false); }} className="w-full text-muted-foreground">
               I'll do this later <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -190,8 +210,8 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
             <CheckCircle className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="font-serif text-2xl text-foreground mb-3">Verified!</h2>
-          <p className="text-muted-foreground text-sm mb-8">Your selfie has been submitted for verification.</p>
+          <h2 className="font-serif text-2xl text-foreground mb-3">Selfie submitted</h2>
+          <p className="text-muted-foreground text-sm mb-8">Your selfie has been submitted and will be reviewed shortly.</p>
           <Button variant="gold" size="lg" onClick={() => onNext(true)} className="w-full max-w-sm">
             Continue <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
