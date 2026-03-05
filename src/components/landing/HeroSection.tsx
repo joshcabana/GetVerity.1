@@ -74,7 +74,7 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link to="/auth">
+          <Link to="/auth?signup=true">
             <Button
               variant="gold"
               size="xl"

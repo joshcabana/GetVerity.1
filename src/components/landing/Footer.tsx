@@ -55,6 +55,18 @@ const Footer = () => {
             🇦🇺 Australian Built
           </span>
         </div>
+
+        {/* Contact & legal */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4 text-xs text-muted-foreground/50">
+          <a
+            href="mailto:hello@getverity.com.au"
+            className="hover:text-foreground transition-colors"
+          >
+            hello@getverity.com.au
+          </a>
+          <span className="hidden sm:inline">·</span>
+          <span>ABN pending</span>
+        </div>
       </div>
     </footer>
   );

@@ -102,7 +102,7 @@ const Navbar = () => {
               </Link>
               <div className="flex items-center justify-between mt-2">
                 <ThemeToggle />
-                <Link to="/auth" onClick={() => setMobileOpen(false)}>
+                <Link to="/auth?signup=true" onClick={() => setMobileOpen(false)}>
                   <Button variant="gold" size="sm">
                     RSVP for the next Drop
                   </Button>

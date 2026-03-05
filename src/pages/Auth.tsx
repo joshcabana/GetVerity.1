@@ -42,6 +42,14 @@ const Auth = () => {
   const [resending, setResending] = useState(false);
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get("signup") === "true") {
+      setMode("signup");
+    }
+  }, [searchParams]);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {

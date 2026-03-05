@@ -99,7 +99,7 @@ const Drops = () => {
           </div>
 
           <div className="text-center mt-16">
-            <Link to="/auth">
+            <Link to="/auth?signup=true">
               <Button variant="gold" size="xl" className="group">
                 Get verified to RSVP
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
