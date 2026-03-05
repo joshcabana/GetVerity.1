@@ -6,27 +6,62 @@ import Footer from "@/components/landing/Footer";
 
 const sections = [
   {
-    title: "Data We Collect",
+    title: "1. Data We Collect",
     content:
       "We collect the minimum data needed to operate Verity: your email address, age confirmation, selfie for verification, and optional profile information (display name, city, gender). During calls, we process transcript snippets and call metadata for safety checks — no raw video is stored.",
   },
   {
-    title: "How We Use Your Data",
+    title: "2. How We Use Your Data",
     content:
       "Your data is used to verify your identity, match you during Drops, run live safety checks, and improve our moderation systems. We never sell your data. We never share your identity with another user unless you both choose Spark.",
   },
   {
-    title: "Data Storage & Retention",
+    title: "3. Data Storage & Retention",
     content:
       "Data is stored on secure, encrypted servers. Call metadata is retained for moderation review and deleted within 30 days. If no mutual spark occurs, no trace of the call is kept. The Chemistry Replay Vault stores only text-based session notes, AI insights, and timestamps — no video or audio is ever recorded or stored.",
   },
   {
-    title: "Your Rights",
+    title: "4. Third-Party Services",
     content:
-      "You can request access to, correction of, or deletion of your personal data at any time. You can delete your account and all associated data from your profile settings. We comply with applicable Australian privacy legislation and GDPR where relevant.",
+      "We use the following third-party services to operate Verity: Supabase (database and authentication, hosted in AWS Sydney region), Agora (real-time video infrastructure), Stripe (payment processing), and AI services for call safety analysis. Each processes only the minimum data required for their function. We do not sell your data to any third party.",
   },
   {
-    title: "Contact",
+    title: "5. Cross-Border Data Transfers",
+    content:
+      "Your data may be processed by our third-party providers in jurisdictions outside Australia, including the United States. We ensure appropriate safeguards are in place, including contractual obligations consistent with the Australian Privacy Principles.",
+  },
+  {
+    title: "6. Your Rights Under the Australian Privacy Act",
+    content:
+      "You have the right to: access your personal information, request correction of inaccurate data, request deletion of your account and associated data, withdraw consent for optional data processing, and lodge a complaint about our handling of your information.",
+  },
+  {
+    title: "7. Cookies and Analytics",
+    content:
+      "Verity uses essential cookies for authentication and session management. We do not use third-party advertising trackers. Analytics data is aggregated and anonymised.",
+  },
+  {
+    title: "8. Data Breach Notification",
+    content:
+      "In the event of a data breach likely to result in serious harm, we will notify affected users and the Office of the Australian Information Commissioner (OAIC) as required by the Notifiable Data Breaches scheme.",
+  },
+  {
+    title: "9. Children's Privacy",
+    content:
+      "Verity is exclusively for users aged 18 and over. We do not knowingly collect data from anyone under 18. If we discover underage data has been collected, it will be deleted immediately.",
+  },
+  {
+    title: "10. Complaints",
+    content:
+      "If you have a complaint about how we handle your personal information, contact us at privacy@getverity.com.au. If you are not satisfied with our response, you may lodge a complaint with the OAIC at oaic.gov.au.",
+  },
+  {
+    title: "11. Changes to This Policy",
+    content:
+      "We may update this policy from time to time. Material changes will be communicated via email or in-app notification. Continued use after changes constitutes acceptance.",
+  },
+  {
+    title: "12. Contact",
     content:
       "For privacy inquiries, data requests, or concerns, contact us at privacy@getverity.com.au. We aim to respond within 5 business days.",
   },
