@@ -89,7 +89,7 @@ const Safety = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
             <span className="text-xs tracking-luxury uppercase text-primary/60 mb-4 block">
               Our promise
