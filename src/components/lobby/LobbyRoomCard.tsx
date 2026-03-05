@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, Crown, ArrowRight, Coins } from "lucide-react";
+import { Crown, ArrowRight, Coins, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Room } from "@/data/rooms";
 
@@ -20,7 +20,6 @@ const LobbyRoomCard = ({
   onSelect,
   onEnter,
 }: LobbyRoomCardProps) => {
-  const occupancyPct = Math.round((room.occupancy / room.maxOccupancy) * 100);
   const Icon = room.icon;
 
   return (
@@ -72,25 +71,12 @@ const LobbyRoomCard = ({
           {room.tagline}
         </p>
 
-        {/* Occupancy row */}
-        <div className="flex items-center gap-3 mb-1">
-          <div className="flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-muted-foreground/70" />
-            <span className="text-xs text-muted-foreground">
-              <span className="text-foreground/80 font-medium tabular-nums">{room.occupancy}</span>{" "}
-              online right now
-            </span>
-          </div>
-        </div>
-
-        {/* Capacity bar */}
-        <div className="w-full h-[3px] rounded-full bg-secondary/60 overflow-hidden mt-2 mb-4">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${occupancyPct}%` }}
-            transition={{ duration: 1.2, delay: 0.3 + index * 0.1, ease: "easeOut" }}
-            className="h-full rounded-full bg-primary/40"
-          />
+        {/* Coming soon indicator */}
+        <div className="flex items-center gap-1.5 mb-4">
+          <Sparkles className="w-3.5 h-3.5 text-primary/60" />
+          <span className="text-xs text-primary/60">
+            First Drop coming soon
+          </span>
         </div>
 
         {/* Peak hours */}

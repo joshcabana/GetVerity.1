@@ -6,8 +6,6 @@ export interface Room {
   name: string;
   tagline: string;
   icon: ComponentType<{ className?: string }>;
-  occupancy: number;
-  maxOccupancy: number;
   premium: boolean;
   peakHours: string;
 }
@@ -18,8 +16,6 @@ export const rooms: Room[] = [
     name: "Night Owls",
     tagline: "For those who come alive after dark. Late-night conversations with fellow insomniacs and stargazers.",
     icon: Moon,
-    occupancy: 142,
-    maxOccupancy: 300,
     premium: false,
     peakHours: "10 PM – 2 AM",
   },
@@ -28,8 +24,6 @@ export const rooms: Room[] = [
     name: "Tech Professionals",
     tagline: "Engineers, designers, and builders who appreciate intellect and ambition in equal measure.",
     icon: Cpu,
-    occupancy: 287,
-    maxOccupancy: 500,
     premium: false,
     peakHours: "7 PM – 11 PM",
   },
@@ -38,8 +32,6 @@ export const rooms: Room[] = [
     name: "Creatives & Makers",
     tagline: "Artists, writers, musicians, and anyone who creates. Where imagination meets connection.",
     icon: Palette,
-    occupancy: 98,
-    maxOccupancy: 250,
     premium: false,
     peakHours: "6 PM – 12 AM",
   },
@@ -48,8 +40,6 @@ export const rooms: Room[] = [
     name: "Over 35",
     tagline: "A space for those past the noise. Refined taste, established lives, genuine intent.",
     icon: Heart,
-    occupancy: 204,
-    maxOccupancy: 400,
     premium: true,
     peakHours: "8 PM – 11 PM",
   },
@@ -58,8 +48,6 @@ export const rooms: Room[] = [
     name: "Introvert Hours",
     tagline: "Lower energy, longer pauses welcome. For those who connect deeply, not loudly.",
     icon: Clock,
-    occupancy: 63,
-    maxOccupancy: 150,
     premium: true,
     peakHours: "9 PM – 1 AM",
   },

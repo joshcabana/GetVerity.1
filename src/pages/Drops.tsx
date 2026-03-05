@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Clock, Users } from "lucide-react";
+import { ArrowRight, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { rooms } from "@/data/rooms";
@@ -82,8 +82,8 @@ const Drops = () => {
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" /> {room.peakHours}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3" /> {room.occupancy}/{room.maxOccupancy}
+                      <span className="flex items-center gap-1 text-primary/70">
+                        <Sparkles className="w-3 h-3" /> First Drop coming soon
                       </span>
                     </div>
                   </div>
