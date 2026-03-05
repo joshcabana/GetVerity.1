@@ -33,7 +33,7 @@ const tiers = [
       "Spark Reflection AI insights",
       "Chemistry Replay Vault",
       "Priority RSVP for Drops",
-      "Access to premium rooms",
+      "Access to premium Drop rooms (Over 35, Introvert Hours, and future themed Drops)",
       "Advanced safety settings",
       "Guardian Net safety sharing",
     ],

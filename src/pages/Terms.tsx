@@ -41,17 +41,37 @@ const sections = [
       "Verity is provided 'as is'. While we take extensive measures to ensure safety and quality, we cannot guarantee uninterrupted service or that all users will behave appropriately. To the maximum extent permitted by law, our liability is limited to the amount you have paid us in the 12 months preceding any claim.",
   },
   {
-    title: "8. Termination",
+    title: "8. AI Monitoring Consent",
+    content:
+      "By using Verity, you consent to automated safety monitoring during live calls. Our AI system analyses call metadata and transcript snippets in real time to detect potential policy violations including harassment, threats, and inappropriate content. No raw video or audio is stored. You acknowledge that AI moderation may occasionally flag interactions incorrectly, and you have the right to appeal any action taken through our appeals process.",
+  },
+  {
+    title: "9. Dispute Resolution",
+    content:
+      "Any dispute arising from your use of Verity will first be addressed through our internal complaints process (contact support@getverity.com.au). If the dispute is not resolved within 30 days, either party may refer the matter to mediation. This does not limit your rights under the Australian Consumer Law.",
+  },
+  {
+    title: "10. Governing Law",
+    content:
+      "These Terms are governed by the laws of the Australian Capital Territory, Australia. You submit to the non-exclusive jurisdiction of the courts of the ACT and any courts of appeal from them.",
+  },
+  {
+    title: "11. ACCC Compliance",
+    content:
+      "Nothing in these Terms excludes, restricts, or modifies any consumer guarantee, right, or remedy conferred by the Australian Consumer Law (Schedule 2 of the Competition and Consumer Act 2010) that cannot be excluded, restricted, or modified by agreement.",
+  },
+  {
+    title: "12. Data Portability",
+    content:
+      "You may request a copy of your personal data in a structured, machine-readable format at any time by contacting privacy@getverity.com.au.",
+  },
+  {
+    title: "13. Termination",
     content:
       "We may suspend or terminate your account at any time for violations of these terms or our community guidelines. You may delete your account at any time through the Settings page. Upon deletion, we will remove your personal data in accordance with our Privacy Policy.",
   },
   {
-    title: "9. Governing Law",
-    content:
-      "These terms are governed by the laws of Australia. Any disputes will be resolved in the courts of New South Wales, Australia. Nothing in these terms excludes or limits rights you may have under the Australian Consumer Law.",
-  },
-  {
-    title: "10. Contact",
+    title: "14. Contact",
     content:
       "If you have questions about these terms, contact us at privacy@getverity.com.au.",
   },
