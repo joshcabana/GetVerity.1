@@ -1,3 +1,4 @@
+// Camera bug fixes applied: stream cleanup, readyState guard, facingMode, toggleCamera fix, revealIdentity wiring, throttled draw loop, stable useEffect deps.
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
