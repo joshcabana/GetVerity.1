@@ -103,7 +103,7 @@ const Safety = () => {
             </p>
           </motion.div>
 
-          <div className="space-y-6">
+          <div className="space-y-3">
             {safetyPoints.map((point, i) => (
               <motion.div
                 key={point.title}
