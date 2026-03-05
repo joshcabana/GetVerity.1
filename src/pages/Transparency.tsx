@@ -231,7 +231,7 @@ const Transparency = () => {
               <p className="text-sm text-muted-foreground/60 mb-5 max-w-md mx-auto">
                 Our moderation logic, privacy architecture, and data handling are documented publicly.
               </p>
-              <a href="https://github.com/joshcabana/spark-echo-verity-d1cec91f" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/joshcabana/spark-echo-verity-48e8fd8f" target="_blank" rel="noopener noreferrer">
                 <Button variant="gold-outline" size="lg">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   View safety documentation
