@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -81,13 +81,6 @@ const FAQ = () => {
 
       <main className="pt-24 pb-16">
         <div className="container max-w-3xl mx-auto px-6">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-
           <div className="text-center mb-12">
             <span className="text-xs tracking-luxury uppercase text-primary/60 mb-4 block">
               Questions
