@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarCheck, Video, Sparkles, MessageCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { CalendarCheck, Video, Sparkles, MessageCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
