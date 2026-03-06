@@ -23,7 +23,7 @@ const sections = [
   {
     title: "4. Third-Party Services",
     content:
-      "We use the following third-party services to operate Verity: Supabase (database and authentication, hosted in AWS Sydney region), Agora (real-time video infrastructure), Stripe (payment processing), and AI services for call safety analysis. Each processes only the minimum data required for their function. We do not sell your data to any third party.",
+      "We use the following third-party services to operate Verity: cloud database and authentication infrastructure (hosted in the AWS Sydney region), Agora (real-time video infrastructure), Stripe (payment processing), and AI services for call safety analysis. Each processes only the minimum data required for their function. We do not sell your data to any third party.",
   },
   {
     title: "5. Cross-Border Data Transfers",
