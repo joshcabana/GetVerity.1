@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Mail, Check } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,12 +12,11 @@ interface SignInStepProps {
 
 const SignInStep = ({ onNext }: SignInStepProps) => {
   const [email, setEmail] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [linkSent, setLinkSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSendOtp = async () => {
+  const handleSendLink = async () => {
     if (!email.trim()) return;
     setLoading(true);
     try {
@@ -26,30 +25,11 @@ const SignInStep = ({ onNext }: SignInStepProps) => {
         options: { emailRedirectTo: window.location.origin + "/onboarding" },
       });
       if (error) throw error;
-      setOtpSent(true);
-      toast({ title: "Code sent", description: "Check your inbox for a 6-digit code." });
+      setLinkSent(true);
+      toast({ title: "Magic link sent", description: "Check your inbox and click the link to continue." });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
       toast({ title: "Something went wrong", description: message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otp.length < 6) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: "email",
-      });
-      if (error) throw error;
-      onNext();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An unexpected error occurred";
-      toast({ title: "Invalid code", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -64,15 +44,15 @@ const SignInStep = ({ onNext }: SignInStepProps) => {
       className="flex flex-col items-center text-center px-6"
     >
       <h2 className="font-serif text-2xl sm:text-3xl text-foreground mb-3">
-        {otpSent ? "Enter your code" : "Sign in to continue"}
+        {linkSent ? "Check your inbox" : "Sign in to continue"}
       </h2>
       <p className="text-muted-foreground max-w-md mb-8 text-sm leading-relaxed">
-        {otpSent
-          ? `We sent a 6-digit code to ${email}`
-          : "We'll send you a one-time code — no password needed."}
+        {linkSent
+          ? `We sent a one-time login link to ${email}. Click it to continue.`
+          : "We'll send you a magic link — no password needed."}
       </p>
 
-      {!otpSent ? (
+      {!linkSent ? (
         <div className="w-full max-w-sm space-y-4">
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -82,13 +62,13 @@ const SignInStep = ({ onNext }: SignInStepProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-11 h-12 bg-card border-border"
-              onKeyDown={(e) => e.key === "Enter" && handleSendOtp()}
+              onKeyDown={(e) => e.key === "Enter" && handleSendLink()}
             />
           </div>
           <Button
             variant="gold"
             size="lg"
-            onClick={handleSendOtp}
+            onClick={handleSendLink}
             className="group w-full"
             disabled={loading || !email.trim()}
           >
@@ -96,7 +76,7 @@ const SignInStep = ({ onNext }: SignInStepProps) => {
               <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                Send code
+                Send magic link
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </>
             )}
@@ -104,34 +84,23 @@ const SignInStep = ({ onNext }: SignInStepProps) => {
         </div>
       ) : (
         <div className="w-full max-w-sm space-y-4">
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="000000"
-            maxLength={6}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="h-12 bg-card border-border text-center text-lg tracking-[0.5em] font-mono"
-            onKeyDown={(e) => e.key === "Enter" && handleVerifyOtp()}
-          />
+          <div className="rounded-lg border border-border bg-card/40 p-4">
+            <p className="text-sm text-foreground mb-1">Waiting for you to click the link…</p>
+            <p className="text-xs text-muted-foreground">
+              Check inbox, spam, and promotions for <span className="font-mono">{email}</span>.
+            </p>
+          </div>
           <Button
-            variant="gold"
-            size="lg"
-            onClick={handleVerifyOtp}
-            className="group w-full"
-            disabled={loading || otp.length < 6}
+            variant="outline"
+            size="sm"
+            onClick={() => { handleSendLink(); }}
+            className="w-full"
+            disabled={loading}
           >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <Check className="mr-2 h-4 w-4" />
-                Verify
-              </>
-            )}
+            {loading ? "Resending…" : "Resend magic link"}
           </Button>
           <button
-            onClick={() => { setOtpSent(false); setOtp(""); }}
+            onClick={() => { setLinkSent(false); }}
             className="text-xs text-primary hover:text-primary/80 transition-colors"
           >
             Use a different email
