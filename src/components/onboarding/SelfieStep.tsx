@@ -6,8 +6,6 @@ import { Camera, ArrowRight, ShieldCheck, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Capacitor } from "@capacitor/core";
-import { Camera as CapCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 interface SelfieStepProps {
   onNext: (verified: boolean) => void;
@@ -22,8 +20,6 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const isNative = Capacitor.isNativePlatform();
-
   // Cleanup camera stream on unmount
   useEffect(() => {
     return () => {
@@ -32,57 +28,6 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
     };
   }, []);
 
-  // Native camera flow using Capacitor Camera plugin
-  const takeNativeSelfie = useCallback(async () => {
-    if (!user) return;
-    setUploading(true);
-    try {
-      const photo = await CapCamera.getPhoto({
-        quality: 85,
-        allowEditing: false,
-        resultType: CameraResultType.Base64,
-        source: CameraSource.Camera,
-        direction: undefined, // front camera default on selfie
-        width: 640,
-        height: 480,
-      });
-
-      if (!photo.base64String) {
-        toast.error("No photo captured. Try again.");
-        setUploading(false);
-        return;
-      }
-
-      // Convert base64 to blob
-      const byteString = atob(photo.base64String);
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-      const blob = new Blob([ab], { type: `image/${photo.format || "jpeg"}` });
-
-      const path = `selfies/${user.id}/${Date.now()}.jpg`;
-      const { error } = await supabase.storage
-        .from("verifications")
-        .upload(path, blob, { contentType: "image/jpeg" });
-
-      if (error) {
-        toast.error("Upload failed. Try again.");
-        setUploading(false);
-        return;
-      }
-
-      setCaptured(true);
-      setUploading(false);
-      toast.success("Selfie captured!");
-    } catch {
-      toast.error("Camera access denied. You can verify later.");
-      setUploading(false);
-    }
-  }, [user]);
-
-  // Web browser camera flow (existing)
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -149,8 +94,6 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
     }, "image/jpeg", 0.85);
   }, [user]);
 
-  const handleTakeSelfie = isNative ? takeNativeSelfie : startCamera;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -176,7 +119,7 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
             <span>Your selfie is processed on-device and never stored publicly.</span>
           </div>
           <div className="w-full max-w-sm space-y-3">
-            <Button variant="gold" size="lg" onClick={handleTakeSelfie} disabled={uploading} className="group w-full">
+            <Button variant="gold" size="lg" onClick={startCamera} disabled={uploading} className="group w-full">
               {uploading ? (
                 <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
               ) : (
@@ -190,7 +133,7 @@ const SelfieStep = ({ onNext }: SelfieStepProps) => {
         </>
       )}
 
-      {capturing && !isNative && (
+      {capturing && (
         <div className="w-full max-w-sm">
           <div className="relative rounded-2xl overflow-hidden mb-6 bg-secondary">
             <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-[4/3] object-cover" />
