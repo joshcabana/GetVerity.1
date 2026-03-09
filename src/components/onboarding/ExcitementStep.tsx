@@ -83,14 +83,12 @@ const ExcitementStep = ({ onNext }: ExcitementStepProps) => {
   // When countdown hits 0, transition to choice
   useEffect(() => {
     if (countdown === 0 && (phase === "agora" || phase === "simulated")) {
-      console.log("DEMO_ENDED");
       if (phase === "agora") leave();
       setPhase("choice");
     }
   }, [countdown, phase, leave]);
 
   const startDemo = useCallback(async () => {
-    console.log("AGORA_DEMO_START");
     setPhase("loading");
     setCountdown(demoDuration);
 
@@ -103,7 +101,6 @@ const ExcitementStep = ({ onNext }: ExcitementStepProps) => {
         throw new Error(error?.message ?? "No token returned");
       }
 
-      console.log("AGORA_TOKEN_GENERATED");
       setAgoraConfig(data as AgoraTokenResponse);
       setPhase("agora");
     } catch (err) {
@@ -113,14 +110,12 @@ const ExcitementStep = ({ onNext }: ExcitementStepProps) => {
   }, [demoDuration]);
 
   const skipDemo = useCallback(() => {
-    console.log("DEMO_ENDED");
     if (phase === "agora") leave();
     setPhase("choice");
     setCountdown(0);
   }, [phase, leave]);
 
   const handleChoice = useCallback((choice: "spark" | "pass") => {
-    console.log(choice === "spark" ? "SPARK_SELECTED" : "PASS_SELECTED");
     setPhase("reveal");
     setTimeout(() => {
       setDemoComplete(true);
