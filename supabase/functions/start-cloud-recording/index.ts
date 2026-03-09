@@ -44,9 +44,13 @@ serve(async (req) => {
       });
     }
 
-    const { call_id, channel } = await req.json();
-    if (!call_id || !channel) {
-      return new Response(JSON.stringify({ error: "call_id and channel required" }), {
+    const body = await req.json();
+    const call_id = typeof body.call_id === "string" ? body.call_id.trim() : "";
+    const channel = typeof body.channel === "string" ? body.channel.trim() : "";
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!call_id || !uuidRegex.test(call_id) || !channel || channel.length > 255) {
+      return new Response(JSON.stringify({ error: "Invalid request" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

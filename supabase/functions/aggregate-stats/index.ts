@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error("Upsert error:", error);
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ error: "Failed to save stats" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("Aggregate stats error:", err);
-    return new Response(JSON.stringify({ error: String(err) }), {
+    return new Response(JSON.stringify({ error: "An error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { RtcTokenBuilder, RtcRole } from "npm:agora-token@2.0.4";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 
 function generateUid(): number {
@@ -36,6 +37,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Rate limit: 10 token requests per minute per user
+    if (!rateLimit(`agora-token:${user.id}`, 10)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

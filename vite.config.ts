@@ -21,11 +21,16 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-agora": ["agora-rtc-sdk-ng"],
-          "vendor-motion": ["framer-motion"],
-          "vendor-charts": ["recharts"],
-          "vendor-router": ["react-router-dom"],
+        manualChunks(id) {
+          if (id.includes("agora-rtc-sdk-ng")) return "vendor-agora";
+          if (id.includes("framer-motion")) return "vendor-motion";
+          if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("react-router-dom") || id.includes("@remix-run")) return "vendor-router";
+          if (id.includes("@tanstack/react-query")) return "vendor-query";
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          if (id.includes("react-helmet-async")) return "vendor-helmet";
+          if (id.includes("@supabase")) return "vendor-supabase";
+          if (id.includes("date-fns")) return "vendor-date-fns";
         },
       },
     },

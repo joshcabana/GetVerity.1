@@ -43,9 +43,11 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
 
-    const { drop_id } = await req.json();
-    if (!drop_id) {
-      return new Response(JSON.stringify({ error: "drop_id required" }), {
+    const body = await req.json();
+    const drop_id = typeof body.drop_id === "string" ? body.drop_id.trim() : "";
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!drop_id || !uuidRegex.test(drop_id)) {
+      return new Response(JSON.stringify({ error: "Invalid drop_id" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

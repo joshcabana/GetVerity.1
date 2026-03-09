@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 
 serve(async (req) => {
@@ -35,14 +36,42 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
-    const { call_id, feeling_score, liked_text, next_time_text } = await req.json();
+    // Rate limit: 10 reflections per minute per user
+    if (!rateLimit(`spark-reflection:${userId}`, 10)) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
+    const body = await req.json();
+
+    // Input validation
+    const call_id = typeof body.call_id === "string" ? body.call_id.trim() : "";
     if (!call_id) {
       return new Response(JSON.stringify({ error: "call_id is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(call_id)) {
+      return new Response(JSON.stringify({ error: "Invalid call_id" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const feeling_score = typeof body.feeling_score === "number"
+      ? Math.min(5, Math.max(1, Math.round(body.feeling_score)))
+      : null;
+    const liked_text = typeof body.liked_text === "string"
+      ? body.liked_text.trim().slice(0, 2000)
+      : null;
+    const next_time_text = typeof body.next_time_text === "string"
+      ? body.next_time_text.trim().slice(0, 2000)
+      : null;
 
     // Verify user is a participant in the call
     const { data: call, error: callErr } = await supabase
@@ -74,9 +103,7 @@ serve(async (req) => {
     if (LOVABLE_API_KEY) {
       const systemPrompt = `You are a warm, empathetic dating coach. A user just finished a 45-second anonymous video call on a dating app called Verity. Based on their self-reflection, generate a brief, encouraging insight (3-4 sentences max). Include: one strength they showed, one gentle suggestion for next time, and a suggested conversation theme for their next call. Keep it personal, warm, and actionable. Do not use emojis. Do not reference the app name.`;
 
-      const userPrompt = `Feeling score: ${feeling_score || "not provided"}/5
-What they liked: ${liked_text || "not provided"}
-What they'd try next time: ${next_time_text || "not provided"}`;
+      const userPrompt = `Feeling score: ${feeling_score ?? "not provided"}/5\nWhat they liked: ${liked_text || "not provided"}\nWhat they'd try next time: ${next_time_text || "not provided"}`;
 
       try {
         const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -118,9 +145,9 @@ What they'd try next time: ${next_time_text || "not provided"}`;
         {
           call_id,
           user_id: userId,
-          feeling_score: feeling_score || null,
-          liked_text: liked_text || null,
-          next_time_text: next_time_text || null,
+          feeling_score,
+          liked_text,
+          next_time_text,
           ai_reflection: aiReflection || null,
         },
         { onConflict: "call_id,user_id" }
@@ -161,7 +188,7 @@ What they'd try next time: ${next_time_text || "not provided"}`;
   } catch (e) {
     console.error("spark-reflection-ai error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "An error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

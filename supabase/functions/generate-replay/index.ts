@@ -34,9 +34,11 @@ serve(async (req) => {
       });
     }
 
-    const { spark_id } = await req.json();
-    if (!spark_id) {
-      return new Response(JSON.stringify({ error: "spark_id required" }), {
+    const body = await req.json();
+    const spark_id = typeof body.spark_id === "string" ? body.spark_id.trim() : "";
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!spark_id || !uuidRegex.test(spark_id)) {
+      return new Response(JSON.stringify({ error: "Invalid spark_id" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { getCorsHeaders, ALLOWED_ORIGINS } from "../_shared/cors.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 // Allowlisted price IDs → mode mapping
 const PRICE_MAP: Record<string, { mode: "payment" | "subscription" }> = {
@@ -40,6 +41,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Rate limit: 5 checkout creations per minute per user
+    if (!rateLimit(`create-checkout:${user.id}`, 5)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
