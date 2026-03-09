@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Helmet } from "react-helmet-async";
 
 const AuthSkeleton = () => (
   <div className="min-h-screen bg-background flex flex-col">
@@ -134,94 +135,101 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="p-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Link>
-      </div>
+    <>
+      <Helmet>
+          <title>Sign In — Verity</title>
+          <meta name="description" content="Sign in or create your Verity account. Anonymous video speed dating for verified adults." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="p-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+        </div>
 
-      <div className="flex-1 flex items-center justify-center px-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className="w-full max-w-md">
-          <div className="text-center mb-10">
-            <VerityLogo className="h-9 w-auto mx-auto mb-2" linkTo="/" />
-            <p className="text-sm text-muted-foreground">
-              {mode === "login" ? "Welcome back." : "Join a community that values real connection."}
-            </p>
-          </div>
+        <div className="flex-1 flex items-center justify-center px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
+            className="w-full max-w-md">
+            <div className="text-center mb-10">
+              <VerityLogo className="h-9 w-auto mx-auto mb-2" linkTo="/" />
+              <p className="text-sm text-muted-foreground">
+                {mode === "login" ? "Welcome back." : "Join a community that values real connection."}
+              </p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
-                <Input type="text" placeholder="Display name" value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)} className="h-12 bg-card border-border" />
-              </motion.div>
-            )}
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input type="email" placeholder="Your email address" value={email}
-                onChange={(e) => setEmail(e.target.value)} className="pl-11 h-12 bg-card border-border" required />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input type="password" placeholder="Password" value={password}
-                onChange={(e) => setPassword(e.target.value)} className="pl-11 h-12 bg-card border-border" required minLength={6} />
-            </div>
-            <Button type="submit" variant="gold" size="lg" className="w-full group" disabled={loading}>
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              ) : mode === "login" ? (
-                <><LogIn className="w-4 h-4 mr-2" /> Sign in</>
-              ) : (
-                <><UserPlus className="w-4 h-4 mr-2" /> Create account</>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === "signup" && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+                  <Input type="text" placeholder="Display name" value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)} className="h-12 bg-card border-border" />
+                </motion.div>
               )}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button onClick={() => {
-              setMode(mode === "login" ? "signup" : "login");
-              setPendingVerificationEmail(null);
-            }}
-              className="text-sm text-primary hover:text-primary/80 transition-colors">
-              {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
-            </button>
-          </div>
-          {mode === "signup" && pendingVerificationEmail && (
-            <div className="mt-4 rounded-lg border border-border bg-card/40 p-4 text-left">
-              <p className="text-sm text-foreground mb-2">
-                Waiting for verification email?
-              </p>
-              <p className="text-xs text-muted-foreground mb-3">
-                Check inbox, spam, and promotions for <span className="font-mono">{pendingVerificationEmail}</span>.
-                If it still has not arrived, resend below.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={handleResendVerification}
-                disabled={resending}
-              >
-                {resending ? "Resending..." : "Resend verification email"}
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input type="email" placeholder="Your email address" value={email}
+                  onChange={(e) => setEmail(e.target.value)} className="pl-11 h-12 bg-card border-border" required />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input type="password" placeholder="Password" value={password}
+                  onChange={(e) => setPassword(e.target.value)} className="pl-11 h-12 bg-card border-border" required minLength={6} />
+              </div>
+              <Button type="submit" variant="gold" size="lg" className="w-full group" disabled={loading}>
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                ) : mode === "login" ? (
+                  <><LogIn className="w-4 h-4 mr-2" /> Sign in</>
+                ) : (
+                  <><UserPlus className="w-4 h-4 mr-2" /> Create account</>
+                )}
               </Button>
-            </div>
-          )}
-        </motion.div>
-      </div>
+            </form>
 
-      <div className="p-6 text-center">
-        <p className="text-xs text-muted-foreground/40">
-          By continuing, you agree to Verity's{" "}
-          <Link to="/terms" className="underline hover:text-muted-foreground transition-colors">terms of service</Link>
-          {" "}and{" "}
-          <Link to="/privacy" className="underline hover:text-muted-foreground transition-colors">privacy policy</Link>.
-        </p>
+            <div className="mt-6 text-center">
+              <button onClick={() => {
+                setMode(mode === "login" ? "signup" : "login");
+                setPendingVerificationEmail(null);
+              }}
+                className="text-sm text-primary hover:text-primary/80 transition-colors">
+                {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
+              </button>
+            </div>
+            {mode === "signup" && pendingVerificationEmail && (
+              <div className="mt-4 rounded-lg border border-border bg-card/40 p-4 text-left">
+                <p className="text-sm text-foreground mb-2">
+                  Waiting for verification email?
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Check inbox, spam, and promotions for <span className="font-mono">{pendingVerificationEmail}</span>.
+                  If it still has not arrived, resend below.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                >
+                  {resending ? "Resending..." : "Resend verification email"}
+                </Button>
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        <div className="p-6 text-center">
+          <p className="text-xs text-muted-foreground/40">
+            By continuing, you agree to Verity's{" "}
+            <Link to="/terms" className="underline hover:text-muted-foreground transition-colors">terms of service</Link>
+            {" "}and{" "}
+            <Link to="/privacy" className="underline hover:text-muted-foreground transition-colors">privacy policy</Link>.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

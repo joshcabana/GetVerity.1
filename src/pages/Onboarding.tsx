@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ExcitementStep from "@/components/onboarding/ExcitementStep";
 import MagicLinkStep from "@/components/onboarding/MagicLinkStep";
 import VerifyStep from "@/components/onboarding/VerifyStep";
+import { Helmet } from "react-helmet-async";
 
 const TOTAL_STEPS = 3;
 
@@ -63,27 +64,34 @@ const Onboarding = () => {
   const progress = ((step + 1) / TOTAL_STEPS) * 100;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress bar */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
-        <div className="max-w-md mx-auto flex items-center gap-3">
-          <span className="text-xs text-muted-foreground font-mono">
-            {step + 1}/{TOTAL_STEPS}
-          </span>
-          <Progress value={progress} className="h-1.5 flex-1" />
-          <span className="font-serif text-sm text-foreground">Verity</span>
+    <>
+      <Helmet>
+          <title>Get Started — Verity</title>
+          <meta name="description" content="Complete your Verity profile to start meeting real people through anonymous video calls." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Progress bar */}
+        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
+          <div className="max-w-md mx-auto flex items-center gap-3">
+            <span className="text-xs text-muted-foreground font-mono">
+              {step + 1}/{TOTAL_STEPS}
+            </span>
+            <Progress value={progress} className="h-1.5 flex-1" />
+            <span className="font-serif text-sm text-foreground">Verity</span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-center justify-center py-12">
+          <AnimatePresence mode="wait">
+            {step === 0 && <ExcitementStep key="excitement" onNext={handleExcitementDone} />}
+            {step === 1 && <MagicLinkStep key="magic-link" onNext={handleMagicLinkDone} />}
+            {step === 2 && <VerifyStep key="verify" onComplete={handleVerifyDone} />}
+          </AnimatePresence>
         </div>
       </div>
-
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center py-12">
-        <AnimatePresence mode="wait">
-          {step === 0 && <ExcitementStep key="excitement" onNext={handleExcitementDone} />}
-          {step === 1 && <MagicLinkStep key="magic-link" onNext={handleMagicLinkDone} />}
-          {step === 2 && <VerifyStep key="verify" onComplete={handleVerifyDone} />}
-        </AnimatePresence>
-      </div>
-    </div>
+    </>
   );
 };
 

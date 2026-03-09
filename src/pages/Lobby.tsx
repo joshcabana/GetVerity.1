@@ -17,6 +17,7 @@ import PullToRefreshIndicator from "@/components/PullToRefreshIndicator";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { isToday, isThisWeek } from "date-fns";
 import { toast } from "sonner";
+import { Helmet } from "react-helmet-async";
 
 interface Drop {
   id: string;
@@ -287,118 +288,125 @@ const Lobby = () => {
   });
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background pb-20 overflow-auto">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container max-w-2xl mx-auto px-5 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <VerityLogo variant="icon" className="h-7 w-7" linkTo="/" />
-            <div className="flex items-center gap-1 ml-3 text-[10px] text-muted-foreground/60">
-              <Shield className="w-3 h-3 text-primary/50" />
-              <span>Safety first</span>
+    <>
+      <Helmet>
+          <title>Lobby — Verity</title>
+          <meta name="description" content="Your Verity dashboard. Queue for a Spark, check your drops, and manage your connections." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      <div ref={containerRef} className="min-h-screen bg-background pb-20 overflow-auto">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+          <div className="container max-w-2xl mx-auto px-5 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <VerityLogo variant="icon" className="h-7 w-7" linkTo="/" />
+              <div className="flex items-center gap-1 ml-3 text-[10px] text-muted-foreground/60">
+                <Shield className="w-3 h-3 text-primary/50" />
+                <span>Safety first</span>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={() => navigate("/profile")}
-            className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
-            <User className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-      </header>
-
-      <main className="container max-w-2xl mx-auto px-5 pt-8">
-        <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
-        {strictPhoneProviderBlocked && (
-          <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-            Live Drops are temporarily paused because phone verification is required but the SMS provider is offline.
-          </div>
-        )}
-        {fallbackPhoneModeActive && (
-          <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
-            Continuity mode is active: phone verification is temporarily optional while the SMS provider is offline.
-          </div>
-        )}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="font-serif text-3xl md:text-4xl text-foreground">Upcoming Drops</h1>
             <button
-              onClick={() => queryClient.invalidateQueries({ queryKey: ["drops"] })}
-              className="w-7 h-7 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-              aria-label="Refresh drops"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
+              onClick={() => navigate("/profile")}
+              className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
+              <User className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
-          <p className="text-sm text-muted-foreground/60 mb-1">Verified 18+ Speed Dating Drops</p>
-          <p className="text-muted-foreground max-w-lg leading-relaxed text-sm">
-            Scheduled sessions by room. RSVP to reserve your spot — you'll be matched when the Drop goes live.
-          </p>
-          <button
-            onClick={() => navigate("/green-room")}
-            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-secondary/50 hover:bg-secondary text-xs text-muted-foreground hover:text-foreground transition-all"
-          >
-            <MonitorCheck className="w-3.5 h-3.5" />
-            Check your setup
-          </button>
-        </motion.div>
+        </header>
 
-        <div className="mb-6">
-          <DropsFilter active={filter} onChange={setFilter} />
-        </div>
-
-        {nextRsvp && filter !== "my-rsvps" && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 rounded-2xl border border-primary/20 bg-primary/5">
-            <span className="text-[10px] uppercase tracking-luxury text-primary block mb-1">Your next Drop</span>
-            <p className="font-serif text-foreground">{nextRsvp.title}</p>
-          </motion.div>
-        )}
-
-        <div className="space-y-4">
-          {dropsLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <DropCardSkeleton key={i} />)
-          ) : filtered.length === 0 ? (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-center text-muted-foreground py-16 text-sm">
-              {filter === "my-rsvps" ? "You haven't RSVP'd to any Drops yet." : "No Drops scheduled — check back soon."}
-            </motion.p>
-          ) : (
-            filtered.map((drop, i) => (
-              <DropCard
-                key={drop.id}
-                drop={drop}
-                rsvpCount={(rsvpCounts as Record<string, number>)[drop.id] ?? 0}
-                isRsvpd={rsvps.includes(drop.id)}
-                onRsvp={(id) => rsvpMutation.mutate(id)}
-                onCancel={(id) => cancelMutation.mutate(id)}
-                onJoin={handleJoin}
-                trustComplete={trustComplete}
-                index={i}
-                waitingCount={(waitingCounts as Record<string, number>)[drop.id] ?? 0}
-              />
-            ))
+        <main className="container max-w-2xl mx-auto px-5 pt-8">
+          <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
+          {strictPhoneProviderBlocked && (
+            <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              Live Drops are temporarily paused because phone verification is required but the SMS provider is offline.
+            </div>
           )}
-        </div>
+          {fallbackPhoneModeActive && (
+            <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+              Continuity mode is active: phone verification is temporarily optional while the SMS provider is offline.
+            </div>
+          )}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
+            className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="font-serif text-3xl md:text-4xl text-foreground">Upcoming Drops</h1>
+              <button
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["drops"] })}
+                className="w-7 h-7 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                aria-label="Refresh drops"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground/60 mb-1">Verified 18+ Speed Dating Drops</p>
+            <p className="text-muted-foreground max-w-lg leading-relaxed text-sm">
+              Scheduled sessions by room. RSVP to reserve your spot — you'll be matched when the Drop goes live.
+            </p>
+            <button
+              onClick={() => navigate("/green-room")}
+              className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-secondary/50 hover:bg-secondary text-xs text-muted-foreground hover:text-foreground transition-all"
+            >
+              <MonitorCheck className="w-3.5 h-3.5" />
+              Check your setup
+            </button>
+          </motion.div>
+
+          <div className="mb-6">
+            <DropsFilter active={filter} onChange={setFilter} />
+          </div>
+
+          {nextRsvp && filter !== "my-rsvps" && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-2xl border border-primary/20 bg-primary/5">
+              <span className="text-[10px] uppercase tracking-luxury text-primary block mb-1">Your next Drop</span>
+              <p className="font-serif text-foreground">{nextRsvp.title}</p>
+            </motion.div>
+          )}
+
+          <div className="space-y-4">
+            {dropsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => <DropCardSkeleton key={i} />)
+            ) : filtered.length === 0 ? (
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-center text-muted-foreground py-16 text-sm">
+                {filter === "my-rsvps" ? "You haven't RSVP'd to any Drops yet." : "No Drops scheduled — check back soon."}
+              </motion.p>
+            ) : (
+              filtered.map((drop, i) => (
+                <DropCard
+                  key={drop.id}
+                  drop={drop}
+                  rsvpCount={(rsvpCounts as Record<string, number>)[drop.id] ?? 0}
+                  isRsvpd={rsvps.includes(drop.id)}
+                  onRsvp={(id) => rsvpMutation.mutate(id)}
+                  onCancel={(id) => cancelMutation.mutate(id)}
+                  onJoin={handleJoin}
+                  trustComplete={trustComplete}
+                  index={i}
+                  waitingCount={(waitingCounts as Record<string, number>)[drop.id] ?? 0}
+                />
+              ))
+            )}
+          </div>
 
 
 
 
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.8 }}
-          className="mt-10 mb-6 text-center text-[11px] text-muted-foreground/40 leading-relaxed">
-          All calls are anonymous · Safety first · Nothing is stored
-        </motion.p>
-      </main>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.8 }}
+            className="mt-10 mb-6 text-center text-[11px] text-muted-foreground/40 leading-relaxed">
+            All calls are anonymous · Safety first · Nothing is stored
+          </motion.p>
+        </main>
 
-      <BottomNav activeTab="go-live" />
+        <BottomNav activeTab="go-live" />
 
-      <MatchmakingOverlay
-        open={matchmaking.active}
-        roomName={matchmaking.roomName}
-        dropTitle={matchmaking.dropTitle}
-        dropId={matchmaking.dropId}
-        onCancel={() => setMatchmaking({ active: false, roomName: "", dropTitle: "", dropId: "" })}
-      />
-    </div>
+        <MatchmakingOverlay
+          open={matchmaking.active}
+          roomName={matchmaking.roomName}
+          dropTitle={matchmaking.dropTitle}
+          dropId={matchmaking.dropId}
+          onCancel={() => setMatchmaking({ active: false, roomName: "", dropTitle: "", dropId: "" })}
+        />
+      </div>
+    </>
   );
 };
 

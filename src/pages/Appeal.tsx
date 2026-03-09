@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Helmet } from "react-helmet-async";
 
 interface ModerationFlag {
   id: string;
@@ -127,14 +128,27 @@ const Appeal = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
+      <>
+        <Helmet>
+          <title>Appeal — Verity</title>
+          <meta name="description" content="Submit an appeal if your Verity account has been flagged." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>Appeal — Verity</title>
+        <meta name="description" content="Submit an appeal if your Verity account has been flagged." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="container max-w-2xl mx-auto px-5 py-4 flex items-center gap-4">
@@ -330,6 +344,7 @@ const Appeal = () => {
         </motion.section>
       </main>
     </div>
+    </>
   );
 };
 

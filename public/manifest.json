@@ -1,0 +1,21 @@
+{
+  "name": "Verity — Real Chemistry in 45 Seconds",
+  "short_name": "Verity",
+  "description": "Verified 18+ anonymous video speed dating. Mutual spark only. Dignity always.",
+  "start_url": "/lobby",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["social", "lifestyle"],
+  "lang": "en-AU",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

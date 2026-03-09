@@ -11,6 +11,7 @@ import SparkCardSkeleton from "@/components/sparks/SparkCardSkeleton";
 import BottomNav from "@/components/BottomNav";
 import ReplayVault from "@/components/vault/ReplayVault";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Helmet } from "react-helmet-async";
 
 const filters = ["All", "This Week", "Archived"] as const;
 type Filter = (typeof filters)[number];
@@ -123,59 +124,66 @@ const SparkHistory = () => {
     });
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background pb-20 overflow-auto">
-      <Tabs defaultValue="sparks" className="w-full">
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
-          <div className="container max-w-2xl mx-auto px-5 pt-5 pb-4">
-            <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="font-serif text-2xl text-foreground mb-4">
-              Your Sparks
-            </motion.h1>
-            <TabsList className="w-full">
-              <TabsTrigger value="sparks" className="flex-1">Sparks</TabsTrigger>
-              <TabsTrigger value="vault" className="flex-1">Vault ✨</TabsTrigger>
-            </TabsList>
-          </div>
-        </header>
-
-        <main className="container max-w-2xl mx-auto px-5 pt-5">
-          <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
-          <TabsContent value="sparks">
-            <div className="flex gap-2 mb-4">
-              {filters.map((f) => (
-                <button key={f} onClick={() => setActive(f)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs transition-all duration-300 ${
-                    active === f
-                      ? "bg-primary/10 text-primary border border-primary/25"
-                      : "bg-secondary/50 text-muted-foreground border border-transparent hover:bg-secondary"
-                  }`}>
-                  {f}
-                </button>
-              ))}
+    <>
+      <Helmet>
+          <title>Spark History — Verity</title>
+          <meta name="description" content="Review your past Sparks, connections, and chemistry vault items." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      <div ref={containerRef} className="min-h-screen bg-background pb-20 overflow-auto">
+        <Tabs defaultValue="sparks" className="w-full">
+          <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
+            <div className="container max-w-2xl mx-auto px-5 pt-5 pb-4">
+              <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                className="font-serif text-2xl text-foreground mb-4">
+                Your Sparks
+              </motion.h1>
+              <TabsList className="w-full">
+                <TabsTrigger value="sparks" className="flex-1">Sparks</TabsTrigger>
+                <TabsTrigger value="vault" className="flex-1">Vault ✨</TabsTrigger>
+              </TabsList>
             </div>
-            {sparksLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 4 }).map((_, i) => <SparkCardSkeleton key={i} />)}
-              </div>
-            ) : filtered.length === 0 ? (
-              <SparkEmptyState />
-            ) : (
-              <div className="space-y-3">
-                {filtered.map((spark, i) => (
-                  <SparkCard key={spark.id} spark={spark} index={i} />
+          </header>
+
+          <main className="container max-w-2xl mx-auto px-5 pt-5">
+            <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} />
+            <TabsContent value="sparks">
+              <div className="flex gap-2 mb-4">
+                {filters.map((f) => (
+                  <button key={f} onClick={() => setActive(f)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs transition-all duration-300 ${
+                      active === f
+                        ? "bg-primary/10 text-primary border border-primary/25"
+                        : "bg-secondary/50 text-muted-foreground border border-transparent hover:bg-secondary"
+                    }`}>
+                    {f}
+                  </button>
                 ))}
               </div>
-            )}
-          </TabsContent>
+              {sparksLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, i) => <SparkCardSkeleton key={i} />)}
+                </div>
+              ) : filtered.length === 0 ? (
+                <SparkEmptyState />
+              ) : (
+                <div className="space-y-3">
+                  {filtered.map((spark, i) => (
+                    <SparkCard key={spark.id} spark={spark} index={i} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          <TabsContent value="vault">
-            <ReplayVault />
-          </TabsContent>
-        </main>
-      </Tabs>
+            <TabsContent value="vault">
+              <ReplayVault />
+            </TabsContent>
+          </main>
+        </Tabs>
 
-      <BottomNav activeTab="sparks" />
-    </div>
+        <BottomNav activeTab="sparks" />
+      </div>
+    </>
   );
 };
 

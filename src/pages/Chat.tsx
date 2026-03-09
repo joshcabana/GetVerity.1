@@ -10,6 +10,7 @@ import MessageBubble from "@/components/chat/MessageBubble";
 import TypingIndicator from "@/components/chat/TypingIndicator";
 import ChatComposer from "@/components/chat/ChatComposer";
 import VoiceIntroBanner from "@/components/chat/VoiceIntroBanner";
+import { Helmet } from "react-helmet-async";
 
 const TYPING_TIMEOUT = 3000;
 
@@ -191,70 +192,77 @@ const Chat = () => {
   }, [sparkId, navigate]);
 
   return (
-    <div className="fixed inset-0 bg-background z-50 flex flex-col">
-      <header className="border-b border-border bg-background/90 backdrop-blur-xl">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <button onClick={() => navigate("/sparks")}
-            className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center border border-border">
-              <User className="w-4 h-4 text-muted-foreground/60" />
+    <>
+      <Helmet>
+          <title>Chat — Verity</title>
+          <meta name="description" content="Chat with your Spark match on Verity." />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+      <div className="fixed inset-0 bg-background z-50 flex flex-col">
+        <header className="border-b border-border bg-background/90 backdrop-blur-xl">
+          <div className="flex items-center gap-3 px-4 h-14">
+            <button onClick={() => navigate("/sparks")}
+              className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center border border-border">
+                <User className="w-4 h-4 text-muted-foreground/60" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-foreground truncate">{partnerName}</h2>
+            </div>
+            <div className="relative">
+              <button onClick={() => setMenuOpen(!menuOpen)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {menuOpen && (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                  className="absolute right-0 top-10 w-44 bg-card border border-border rounded-lg shadow-lg py-1 z-10">
+                  <button onClick={handleReport}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                    <Flag className="w-3.5 h-3.5" /> Report
+                  </button>
+                  <button onClick={handleBlock}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                    <Ban className="w-3.5 h-3.5" /> Block
+                  </button>
+                  <button onClick={handleArchive}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                    <Archive className="w-3.5 h-3.5" /> Archive Spark
+                  </button>
+                </motion.div>
+              )}
             </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-medium text-foreground truncate">{partnerName}</h2>
-          </div>
-          <div className="relative">
-            <button onClick={() => setMenuOpen(!menuOpen)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-            {menuOpen && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                className="absolute right-0 top-10 w-44 bg-card border border-border rounded-lg shadow-lg py-1 z-10">
-                <button onClick={handleReport}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                  <Flag className="w-3.5 h-3.5" /> Report
-                </button>
-                <button onClick={handleBlock}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                  <Ban className="w-3.5 h-3.5" /> Block
-                </button>
-                <button onClick={handleArchive}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                  <Archive className="w-3.5 h-3.5" /> Archive Spark
-                </button>
-              </motion.div>
-            )}
-          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {partnerVoicePath && partnerVoicePath !== "skipped" && (
+            <VoiceIntroBanner storagePath={partnerVoicePath} matchName={partnerName} />
+          )}
+          {partnerVoicePath === "skipped" && (
+            <p className="text-center text-[11px] text-muted-foreground/50 py-2">
+              They skipped their voice intro
+            </p>
+          )}
+          {messages.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground">You sparked! Say hello.</p>
+            </div>
+          )}
+          {messages.map((msg, i) => (
+            <MessageBubble key={msg.id} message={msg} currentUserId={user?.id || ""} index={i} />
+          ))}
+          {partnerTyping && <TypingIndicator />}
+          <div ref={messagesEndRef} />
         </div>
-      </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {partnerVoicePath && partnerVoicePath !== "skipped" && (
-          <VoiceIntroBanner storagePath={partnerVoicePath} matchName={partnerName} />
-        )}
-        {partnerVoicePath === "skipped" && (
-          <p className="text-center text-[11px] text-muted-foreground/50 py-2">
-            They skipped their voice intro
-          </p>
-        )}
-        {messages.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">You sparked! Say hello.</p>
-          </div>
-        )}
-        {messages.map((msg, i) => (
-          <MessageBubble key={msg.id} message={msg} currentUserId={user?.id || ""} index={i} />
-        ))}
-        {partnerTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
+        <ChatComposer onSend={handleSend} onTyping={broadcastTyping} />
       </div>
-
-      <ChatComposer onSend={handleSend} onTyping={broadcastTyping} />
-    </div>
+    </>
   );
 };
 

@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import AppHeader from "@/components/AppHeader";
 import PushNotificationManager from "@/components/PushNotificationManager";
+import CookieConsent from "@/components/CookieConsent";
 import { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 
@@ -101,6 +102,7 @@ const App = () => (
                   </Routes>
                 </Suspense>
               </ErrorBoundary>
+              <CookieConsent />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>

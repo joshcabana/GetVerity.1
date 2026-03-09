@@ -1,10 +1,10 @@
 import { createRoot } from "react-dom/client";
-import { initSentry } from "@/lib/sentry";
 import "./index.css";
 import ConfigErrorScreen from "@/components/ConfigErrorScreen";
 import { getMissingRuntimeEnvKeys } from "@/lib/runtimeEnv";
+import { initSentry } from "@/lib/sentry";
 
-// Initialize Sentry before anything else so it catches bootstrap errors too
+// Kick off Sentry loading in parallel with bootstrap (non-blocking)
 initSentry();
 
 const rootElement = document.getElementById("root");
