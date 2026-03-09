@@ -7,6 +7,13 @@ import {
   Shield, Phone, Camera, Check, ArrowRight, ShieldCheck,
   CheckCircle, Sparkles, Calendar, UserPlus,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -42,6 +49,9 @@ const VerifyStep = ({ onComplete }: VerifyStepProps) => {
   // Sub-step state
   const [subStep, setSubStep] = useState<SubStep>("pledge");
   const [pledgeAccepted, setPledgeAccepted] = useState(false);
+
+  // Gender selection
+  const [gender, setGender] = useState<string>("");
 
   // Phone state
   const [phone, setPhone] = useState("");
@@ -364,9 +374,30 @@ const VerifyStep = ({ onComplete }: VerifyStepProps) => {
             <h2 className="font-serif text-2xl text-foreground mb-2">
               ✅ Verified · You're in the next Drop!
             </h2>
-            <p className="text-muted-foreground text-sm mb-8">
+            <p className="text-muted-foreground text-sm mb-6">
               Welcome to Verity. Real chemistry starts now.
             </p>
+
+            {/* Gender select — optional, used for balanced matchmaking */}
+            <div className="w-full mb-6">
+              <label className="text-xs text-muted-foreground/70 mb-1.5 block">How do you identify? (helps with matchmaking balance)</label>
+              <Select value={gender} onValueChange={async (val) => {
+                setGender(val);
+                if (user) {
+                  await supabase.from("profiles").update({ gender: val }).eq("user_id", user.id);
+                }
+              }}>
+                <SelectTrigger className="h-11 bg-card border-border" aria-label="Gender identity">
+                  <SelectValue placeholder="Prefer not to say" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="woman">Woman</SelectItem>
+                  <SelectItem value="man">Man</SelectItem>
+                  <SelectItem value="non-binary">Non-binary</SelectItem>
+                  <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Drop teaser */}
             {nextDrop && (

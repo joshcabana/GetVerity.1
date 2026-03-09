@@ -77,10 +77,11 @@ Deno.serve(async (req) => {
     const genderCounts: Record<string, number> = { men: 0, women: 0, nonbinary: 0 };
     if (genderRes.data) {
       for (const p of genderRes.data) {
-        const g = (p.gender || "").toLowerCase();
+        const g = (p.gender || "").toLowerCase().trim();
         if (g === "male" || g === "man") genderCounts.men++;
         else if (g === "female" || g === "woman") genderCounts.women++;
-        else if (g) genderCounts.nonbinary++;
+        else if (g === "non-binary" || g === "nonbinary" || g === "nb" || g === "enby") genderCounts.nonbinary++;
+        // Skip 'prefer-not-to-say' and empty — they don't count toward balance
       }
     }
     const totalGendered = genderCounts.men + genderCounts.women + genderCounts.nonbinary;

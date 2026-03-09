@@ -21,7 +21,7 @@ const BottomNav = ({ activeTab }: BottomNavProps) => {
   const { data: unreadCount } = useUnreadCount();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/90 backdrop-blur-xl safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/90 backdrop-blur-xl safe-area-bottom" aria-label="Main navigation">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         {tabs.map((tab) => {
           const isActive = activeTab
@@ -35,6 +35,8 @@ const BottomNav = ({ activeTab }: BottomNavProps) => {
               key={tab.id}
               onClick={() => navigate(tab.path)}
               className="relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors"
+              aria-label={tab.label}
+              aria-current={isActive ? "page" : undefined}
             >
               <div className="relative">
                 <Icon

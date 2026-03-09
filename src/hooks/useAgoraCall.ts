@@ -5,7 +5,10 @@ import AgoraRTC, {
   IMicrophoneAudioTrack,
   IAgoraRTCRemoteUser,
   ILocalVideoTrack,
+  NetworkQuality,
 } from "agora-rtc-sdk-ng";
+
+export type ConnectionQuality = "excellent" | "good" | "poor" | "disconnected" | "reconnecting";
 
 interface UseAgoraCallParams {
   appId: string;
@@ -99,6 +102,8 @@ export function useAgoraCall({ appId, channel, token, uid, enabled }: UseAgoraCa
   const [cameraOn, setCameraOn] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>("excellent");
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Stable refs for join/leave to avoid useEffect dependency loops
   const paramsRef = useRef({ appId, channel, token, uid, enabled });
@@ -215,7 +220,50 @@ export function useAgoraCall({ appId, channel, token, uid, enabled }: UseAgoraCa
           setIsRemoteConnected(false);
         });
 
+        // Connection state monitoring with auto-reconnect
+        client.on("connection-state-change", (curState, _revState, reason) => {
+          if (cancelled) return;
+          if (curState === "RECONNECTING") {
+            setConnectionQuality("reconnecting");
+            // Auto-fail after 8 seconds — in a 45s call, longer is pointless
+            reconnectTimeoutRef.current = setTimeout(() => {
+              if (clientRef.current) {
+                setError("Connection lost");
+                setConnectionQuality("disconnected");
+              }
+            }, 8000);
+          } else if (curState === "CONNECTED") {
+            // Successfully reconnected
+            if (reconnectTimeoutRef.current) {
+              clearTimeout(reconnectTimeoutRef.current);
+              reconnectTimeoutRef.current = null;
+            }
+            setConnectionQuality("good");
+          } else if (curState === "DISCONNECTED") {
+            setConnectionQuality("disconnected");
+            if (reason === "NETWORK_ERROR") {
+              setError("Network disconnected");
+            }
+          }
+        });
+
+        // Network quality monitoring (fires every 2s)
+        client.on("network-quality", (stats: NetworkQuality) => {
+          if (cancelled) return;
+          // Agora quality levels: 0=unknown, 1=excellent, 2=good, 3=poor, 4=bad, 5=very bad, 6=disconnected
+          const uplinkQ = stats.uplinkNetworkQuality ?? 0;
+          const downlinkQ = stats.downlinkNetworkQuality ?? 0;
+          const worst = Math.max(uplinkQ, downlinkQ);
+          if (worst <= 1) setConnectionQuality("excellent");
+          else if (worst <= 2) setConnectionQuality("good");
+          else if (worst <= 4) setConnectionQuality("poor");
+          else setConnectionQuality("disconnected");
+        });
+
         await client.join(appId, channel, token || null, uid);
+
+        // Enable dual-stream for better adaptivity on poor connections
+        await client.enableDualStream().catch(() => { /* optional, non-fatal */ });
 
         if (cancelled) {
           await client.leave();
@@ -266,6 +314,10 @@ export function useAgoraCall({ appId, channel, token, uid, enabled }: UseAgoraCa
 
     return () => {
       cancelled = true;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       cleanupTracks();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -280,6 +332,7 @@ export function useAgoraCall({ appId, channel, token, uid, enabled }: UseAgoraCa
     micOn,
     cameraOn,
     error,
+    connectionQuality,
     leave,
     toggleMic,
     toggleCamera,

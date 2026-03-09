@@ -261,6 +261,11 @@ const Lobby = () => {
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
+  // Pre-warm Agora SDK so it's cached before the user joins a call
+  useEffect(() => {
+    import("agora-rtc-sdk-ng").catch(() => { /* preload only, non-critical */ });
+  }, []);
+
   // Filter drops
   const filtered = drops.filter((d) => {
     if (filter === "today") return isToday(new Date(d.scheduled_at));

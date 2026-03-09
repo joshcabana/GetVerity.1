@@ -90,7 +90,7 @@ const Transparency = () => {
   ];
 
   const safetyStats = [
-    { label: "AI accuracy rate", value: `${stats?.ai_accuracy ?? 0}%`, detail: "Continuously improving with human review" },
+    { label: "AI accuracy rate", value: stats?.ai_accuracy != null ? `${stats.ai_accuracy}%` : "Not enough data", detail: "Continuously improving with human review" },
     { label: "Appeals total", value: String(stats?.appeals_total ?? 0), detail: "Every appeal is reviewed" },
     { label: "Appeals upheld", value: String(stats?.appeals_upheld ?? 0), detail: "We listen and correct when wrong" },
     { label: "Moderation flags", value: String(stats?.moderation_flags_count ?? 0), detail: "Flags requiring review" },

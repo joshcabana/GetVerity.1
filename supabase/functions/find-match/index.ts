@@ -53,11 +53,11 @@ serve(async (req) => {
       throw new Error("Identity verification incomplete");
     }
 
-    // Check phone requirement from feature flags
+    // Check phone requirement from feature flags (key = 'auth_policy' in app_config)
     const { data: phoneFlag } = await admin
       .from("app_config")
       .select("value_json")
-      .eq("key", "feature_flags")
+      .eq("key", "auth_policy")
       .maybeSingle();
 
     const requirePhone = (phoneFlag?.value_json as Record<string, boolean> | null)?.require_phone_verification ?? true;

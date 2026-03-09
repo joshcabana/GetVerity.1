@@ -30,6 +30,7 @@ const SparkPassButtons = ({ onChoice, elapsed }: SparkPassButtonsProps) => {
           disabled={passDisabled}
           onClick={() => onChoice("pass")}
           className="min-w-[130px] gap-2 border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 disabled:opacity-40"
+          aria-label="Pass — no spark"
         >
           <X className="w-4 h-4" />
           Pass
@@ -39,6 +40,7 @@ const SparkPassButtons = ({ onChoice, elapsed }: SparkPassButtonsProps) => {
           size="xl"
           onClick={() => onChoice("spark")}
           className="min-w-[130px] gap-2"
+          aria-label="Spark — I felt a connection"
         >
           <Sparkles className="w-4 h-4" />
           Spark

@@ -109,6 +109,7 @@ const LiveCall = () => {
     micOn,
     cameraOn,
     error: agoraError,
+    connectionQuality,
     leave,
     toggleMic,
     toggleCamera,
@@ -464,7 +465,7 @@ const LiveCall = () => {
                   <Shield className="w-3 h-3 text-primary/50" />
                   <span>Safety on</span>
                 </div>
-                <ConnectionIndicator quality="excellent" />
+                <ConnectionIndicator quality={connectionQuality} />
               </div>
               <div className="absolute left-1/2 -translate-x-1/2 top-2">
                 <CallCountdown seconds={secondsLeft} total={CALL_DURATION} />
