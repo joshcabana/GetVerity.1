@@ -13,7 +13,9 @@
  *   2. Add VITE_SENTRY_DSN=<your-dsn> to your Lovable project's environment variables
  */
 
-let sentryModule: typeof import("@sentry/react") | null = null;
+type SentryModule = typeof import("@sentry/react");
+type ScopeCallback = (scope: import("@sentry/react").Scope) => void;
+let sentryModule: SentryModule | null = null;
 let initPromise: Promise<void> | null = null;
 
 /**
@@ -79,11 +81,13 @@ export const Sentry = {
       initSentry().then(() => sentryModule?.captureMessage(message, level));
     }
   },
-  withScope(callback: (scope: any) => void) {
+  withScope(callback: ScopeCallback) {
     if (sentryModule) {
       sentryModule.withScope(callback);
     } else {
-      initSentry().then(() => sentryModule?.withScope(callback));
+      initSentry().then(() => {
+        if (sentryModule) sentryModule.withScope(callback);
+      });
     }
   },
 };

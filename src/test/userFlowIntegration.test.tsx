@@ -19,6 +19,15 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import type { Session, User } from "@supabase/supabase-js";
+import type { Tables } from "@/integrations/supabase/types";
+
+// Cast helpers to avoid `as any` — narrow to the real type via unknown
+function mockProfile(p: Record<string, unknown>) {
+  return p as unknown as Tables<"profiles">;
+}
+function mockTrust(t: Record<string, unknown>) {
+  return t as unknown as ReturnType<typeof useAuth>["userTrust"];
+}
 
 // ── Mocks ──────────────────────────────────────────────────
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: vi.fn() }));
@@ -173,14 +182,14 @@ describe("Auth gate flow", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        profile: { display_name: "Test" } as any,
-        userTrust: {
+        profile: mockProfile({ display_name: "Test" }),
+        userTrust: mockTrust({
           trust_score: 80,
           is_banned: false,
           selfie_verified: true,
           safety_pledge_accepted: true,
           phone_verified: true,
-        } as any,
+        }),
       }),
     );
 
@@ -210,7 +219,7 @@ describe("Auth gate flow", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        profile: { display_name: "Test" } as any,
+        profile: mockProfile({ display_name: "Test" }),
       }),
     );
 
@@ -243,11 +252,11 @@ describe("Trust verification flow", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        userTrust: {
+        userTrust: mockTrust({
           selfie_verified: false,
           safety_pledge_accepted: true,
           phone_verified: true,
-        } as any,
+        }),
       }),
     );
 
@@ -276,11 +285,11 @@ describe("Trust verification flow", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        userTrust: {
+        userTrust: mockTrust({
           selfie_verified: true,
           safety_pledge_accepted: false,
           phone_verified: true,
-        } as any,
+        }),
       }),
     );
 
@@ -315,11 +324,11 @@ describe("Trust verification flow", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        userTrust: {
+        userTrust: mockTrust({
           selfie_verified: true,
           safety_pledge_accepted: true,
           phone_verified: false, // Not verified, but not required
-        } as any,
+        }),
       }),
     );
 
@@ -403,11 +412,11 @@ describe("Loading state handling", () => {
         session: mockSession,
         user: mockUser,
         onboardingComplete: true,
-        userTrust: {
+        userTrust: mockTrust({
           selfie_verified: true,
           safety_pledge_accepted: true,
           phone_verified: true,
-        } as any,
+        }),
       }),
     );
     mockUseFeatureFlags.mockReturnValue({
