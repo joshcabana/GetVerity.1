@@ -1,7 +1,11 @@
 import { createRoot } from "react-dom/client";
+import { initSentry } from "@/lib/sentry";
 import "./index.css";
 import ConfigErrorScreen from "@/components/ConfigErrorScreen";
 import { getMissingRuntimeEnvKeys } from "@/lib/runtimeEnv";
+
+// Initialize Sentry before anything else so it catches bootstrap errors too
+initSentry();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -23,5 +27,7 @@ const bootstrap = async () => {
 
 bootstrap().catch((error) => {
   console.error("[Verity] Failed to bootstrap app:", error);
+  // Report bootstrap failures to Sentry
+  import("@/lib/sentry").then(({ Sentry }) => Sentry.captureException(error)).catch(() => {});
   root.render(<ConfigErrorScreen missingKeys={["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"]} />);
 });

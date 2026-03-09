@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 
 // We can't directly import the Deno-targeted module, so we test the logic inline
 describe("Rate Limiter Logic", () => {
@@ -27,6 +27,11 @@ describe("Rate Limiter Logic", () => {
 
   beforeEach(() => {
     store.clear();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("allows requests under the limit", () => {
@@ -48,16 +53,14 @@ describe("Rate Limiter Logic", () => {
   });
 
   it("resets after the window expires", () => {
-    // Use a very short window
-    expect(rateLimit("user5", 1, 1)).toBe(true);
-    expect(rateLimit("user5", 1, 1)).toBe(false);
+    // Use a 100ms window to avoid sub-ms race conditions
+    expect(rateLimit("user5", 1, 100)).toBe(true);
+    expect(rateLimit("user5", 1, 100)).toBe(false);
 
-    // Wait for the window to pass (entry.resetAt was now+1ms)
-    // Manually expire by setting resetAt in the past
-    const entry = store.get("user5")!;
-    entry.resetAt = Date.now() - 1;
+    // Advance time past the window
+    vi.advanceTimersByTime(101);
 
-    expect(rateLimit("user5", 1, 1)).toBe(true); // should be allowed again
+    expect(rateLimit("user5", 1, 100)).toBe(true); // should be allowed again
   });
 
   it("returns true for the first request always", () => {

@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { Sentry } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -24,6 +25,12 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught:", error, errorInfo);
+
+    // Report to Sentry with component stack as extra context
+    Sentry.withScope((scope) => {
+      scope.setExtra("componentStack", errorInfo.componentStack);
+      Sentry.captureException(error);
+    });
   }
 
   render() {

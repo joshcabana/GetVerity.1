@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("react-helmet-async")) return "vendor-helmet";
           if (id.includes("@supabase")) return "vendor-supabase";
           if (id.includes("date-fns")) return "vendor-date-fns";
+          if (id.includes("@sentry")) return "vendor-sentry";
         },
       },
     },
