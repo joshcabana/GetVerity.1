@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { AnimatePresence } from "framer-motion";
 import {
   Shield, AlertTriangle, BarChart3, Users, Settings,
@@ -46,7 +47,12 @@ const Admin = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <>
+      <Helmet>
+        <title>Admin — Verity</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <aside className="hidden md:flex flex-col w-56 border-r border-border bg-card/50 p-4 gap-1">
         <div className="flex items-center gap-2 mb-8 px-2">
@@ -134,6 +140,7 @@ const Admin = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

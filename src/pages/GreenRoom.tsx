@@ -119,6 +119,7 @@ const GreenRoom = () => {
       <Helmet>
         <title>Green Room — Verity</title>
         <meta name="description" content="Check your camera, mic, and connection before joining a Verity Drop." />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">

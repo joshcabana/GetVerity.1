@@ -18,6 +18,7 @@ const NotFound = () => {
       <Helmet>
         <title>Page Not Found — Verity</title>
         <meta name="description" content="The page you're looking for doesn't exist. Return to Verity's homepage." />
+        <meta name="robots" content="noindex, nofollow" />
         <meta property="og:title" content="Page Not Found — Verity" />
         <meta property="og:description" content="The page you're looking for doesn't exist. Return to Verity's homepage." />
         <meta property="og:image" content="https://getverity.com.au/og-logo.png" />

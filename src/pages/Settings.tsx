@@ -93,6 +93,7 @@ const Settings = () => {
       <Helmet>
         <title>Settings — Verity</title>
         <meta name="description" content="Manage your Verity account, subscription, and privacy settings." />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
