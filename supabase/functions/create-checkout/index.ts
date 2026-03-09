@@ -1,17 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.21.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
-const ALLOWED_ORIGINS = [
-  "https://getverity.com.au",
-  "https://spark-echo-verity.lovable.app",
-  "https://id-preview--a81e90ba-a208-41e2-bf07-a3adfb94bfcb.lovable.app",
-];
+import { getCorsHeaders, ALLOWED_ORIGINS } from "../_shared/cors.ts";
 
 // Allowlisted price IDs → mode mapping
 const PRICE_MAP: Record<string, { mode: "payment" | "subscription" }> = {
@@ -23,6 +13,8 @@ const PRICE_MAP: Record<string, { mode: "payment" | "subscription" }> = {
 };
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

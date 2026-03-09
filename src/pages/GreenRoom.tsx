@@ -71,6 +71,14 @@ const GreenRoom = () => {
     };
   }, []);
 
+  // Pre-load Agora SDK so it's cached before the call starts.
+  // This avoids a 1.4MB download delay when entering a live call.
+  useEffect(() => {
+    import("agora-rtc-sdk-ng").catch(() => {
+      // Non-critical — SDK will load on demand if pre-load fails
+    });
+  }, []);
+
   // Network check
   useEffect(() => {
     let cancelled = false;

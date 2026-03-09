@@ -1,17 +1,32 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Auth gate: only allow service_role key (this is a cron-only function)
+    const authHeader = req.headers.get("Authorization");
+    const expectedServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    if (token !== expectedServiceKey) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden — service_role only" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -78,7 +93,7 @@ Deno.serve(async (req) => {
       : { men: 0, women: 0, nonbinary: 0 };
 
     // Compute AI moderation accuracy (% of flags that were cleared)
-    let aiAccuracy = 96.8; // default
+    let aiAccuracy: number | null = null; // null = not enough data yet
     if (aiAccuracyRes.data && aiAccuracyRes.data.length > 0) {
       const reviewed = aiAccuracyRes.data.filter(
         (f) => f.action_taken !== null,

@@ -224,6 +224,7 @@ const Lobby = () => {
             return;
           }
           try {
+            if (!pollDropRef.current) return;
             const { data: pollData, error: pollErr } = await supabase.functions.invoke("find-match", {
               body: pollDropRef.current,
             });

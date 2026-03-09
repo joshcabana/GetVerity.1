@@ -1,10 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
 
 // Moderation threshold constants
 const SAFE_THRESHOLD = 0.3;    // Below this: skip DB writes entirely (false-positive guard)
@@ -27,6 +24,8 @@ You must respond ONLY by calling the moderate_call tool. Never respond with plai
 Be fair and avoid false positives. Context matters — discussing topics like art, history, or medicine that mention sensitive subjects is NOT a violation. Flirting and compliments are normal on a dating platform and are NOT violations unless they become harassment.`;
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

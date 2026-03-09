@@ -138,7 +138,7 @@ const LiveCall = () => {
         return;
       }
 
-      setCallData(call);
+      setCallData(call as CallRecord);
       const role = call.caller_id === user.id ? "caller" : "callee";
       setMyRole(role);
       setPartnerId(role === "caller" ? call.callee_id : call.caller_id);

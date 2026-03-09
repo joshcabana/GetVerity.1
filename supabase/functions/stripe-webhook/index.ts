@@ -173,10 +173,11 @@ serve(async (req) => {
         const entitlement = priceId ? PRICE_ENTITLEMENTS[priceId] : null;
 
         if (entitlement?.tokens) {
-          await supabase
-            .from("profiles")
-            .update({ token_balance: (profile.token_balance || 0) + entitlement.tokens })
-            .eq("user_id", profile.user_id);
+          // Atomic token credit via SQL RPC (prevents read-then-write race condition)
+          await supabase.rpc("add_tokens", {
+            p_user_id: profile.user_id,
+            p_amount: entitlement.tokens,
+          });
 
           await supabase.from("token_transactions").insert({
             user_id: profile.user_id,

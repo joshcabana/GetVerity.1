@@ -54,14 +54,22 @@ const Appeal = () => {
 
       // Check if any of these flags already have an appeal
       if (flags && flags.length > 0) {
-        const { data: existingAppeal } = await supabase
-          .from("appeals")
-          .select("id")
-          .eq("flag_id", flags[0].id)
-          .limit(1);
+        const topFlag = flags[0];
+        if (topFlag.id) {
+          const { data: existingAppeal } = await supabase
+            .from("appeals")
+            .select("id")
+            .eq("flag_id", topFlag.id)
+            .limit(1);
 
-        if (!existingAppeal || existingAppeal.length === 0) {
-          setPendingFlag(flags[0]);
+          if (!existingAppeal || existingAppeal.length === 0) {
+            setPendingFlag({
+              id: topFlag.id,
+              reason: topFlag.reason,
+              ai_confidence: topFlag.ai_confidence,
+              created_at: topFlag.created_at ?? new Date().toISOString(),
+            });
+          }
         }
       }
 
