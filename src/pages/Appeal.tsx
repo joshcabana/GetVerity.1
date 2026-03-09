@@ -41,6 +41,7 @@ const Appeal = () => {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
 
     const fetchData = async () => {
       setLoading(true);
@@ -53,6 +54,8 @@ const Appeal = () => {
         .order("created_at", { ascending: false })
         .limit(1);
 
+      if (cancelled) return;
+
       // Check if any of these flags already have an appeal
       if (flags && flags.length > 0) {
         const topFlag = flags[0];
@@ -63,7 +66,7 @@ const Appeal = () => {
             .eq("flag_id", topFlag.id)
             .limit(1);
 
-          if (!existingAppeal || existingAppeal.length === 0) {
+          if (!cancelled && (!existingAppeal || existingAppeal.length === 0)) {
             setPendingFlag({
               id: topFlag.id,
               reason: topFlag.reason,
@@ -74,6 +77,8 @@ const Appeal = () => {
         }
       }
 
+      if (cancelled) return;
+
       // Fetch past appeals
       const { data: appeals } = await supabase
         .from("appeals")
@@ -81,11 +86,14 @@ const Appeal = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      setPastAppeals((appeals as PastAppeal[]) || []);
-      setLoading(false);
+      if (!cancelled) {
+        setPastAppeals((appeals as PastAppeal[]) || []);
+        setLoading(false);
+      }
     };
 
     fetchData();
+    return () => { cancelled = true; };
   }, [user]);
 
   const handleSubmit = async () => {

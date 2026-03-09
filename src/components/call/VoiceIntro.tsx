@@ -39,17 +39,19 @@ const VoiceIntro = ({ sparkId, onComplete }: VoiceIntroProps) => {
   // Detect which column belongs to the current user
   useEffect(() => {
     if (!user || !sparkId) return;
+    let cancelled = false;
     const detect = async () => {
       const { data } = await supabase
         .from("sparks")
         .select("user_a, user_b")
         .eq("id", sparkId)
         .single();
-      if (data) {
+      if (!cancelled && data) {
         setMyColumn(data.user_a === user.id ? "voice_intro_a" : "voice_intro_b");
       }
     };
     detect();
+    return () => { cancelled = true; };
   }, [user, sparkId]);
 
   // Recording timer

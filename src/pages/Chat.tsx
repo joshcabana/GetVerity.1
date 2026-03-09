@@ -38,13 +38,14 @@ const Chat = () => {
   // Fetch spark data
   useEffect(() => {
     if (!sparkId || !user) return;
+    let cancelled = false;
     const fetchSpark = async () => {
       const { data: spark } = await supabase
         .from("sparks")
         .select("user_a, user_b, voice_intro_a, voice_intro_b")
         .eq("id", sparkId)
         .single();
-      if (!spark) return;
+      if (cancelled || !spark) return;
 
       const pid = spark.user_a === user.id ? spark.user_b : spark.user_a;
       setPartnerId(pid);
@@ -55,25 +56,29 @@ const Chat = () => {
 
       const { data: profiles } = await supabase
         .rpc("get_spark_partner_profile", { _partner_user_id: pid });
+      if (cancelled) return;
       if (profiles && profiles.length > 0 && profiles[0].display_name) {
         setPartnerName(profiles[0].display_name.split(" ")[0]);
       }
     };
     fetchSpark();
+    return () => { cancelled = true; };
   }, [sparkId, user]);
 
   // Fetch messages
   useEffect(() => {
     if (!sparkId) return;
+    let cancelled = false;
     const fetchMessages = async () => {
       const { data } = await supabase
         .from("messages")
         .select("id, sender_id, content, created_at, is_read")
         .eq("spark_id", sparkId)
         .order("created_at", { ascending: true });
-      if (data) setMessages(data);
+      if (!cancelled && data) setMessages(data);
     };
     fetchMessages();
+    return () => { cancelled = true; };
   }, [sparkId]);
 
   // Realtime messages

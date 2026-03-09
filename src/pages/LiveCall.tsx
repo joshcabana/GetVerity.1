@@ -126,6 +126,7 @@ const LiveCall = () => {
   // Fetch call data and get Agora token
   useEffect(() => {
     if (!callId || !user) return;
+    let cancelled = false;
 
     const fetchCall = async () => {
       const { data: call, error } = await supabase
@@ -133,6 +134,8 @@ const LiveCall = () => {
         .select("*")
         .eq("id", callId)
         .single();
+
+      if (cancelled) return;
 
       if (error || !call) {
         toast.error("Call not found");
@@ -151,7 +154,9 @@ const LiveCall = () => {
         body: { call_id: callId, channel },
       });
 
-      if (tokenErr) {
+      if (cancelled) return;
+
+      if (tokenErr || !tokenData?.appId) {
         toast.error("Failed to get call credentials");
         navigate("/lobby");
         return;
@@ -166,6 +171,7 @@ const LiveCall = () => {
     };
 
     fetchCall();
+    return () => { cancelled = true; };
   }, [callId, user, navigate, channelFromUrl]);
 
   // When Agora joins, start the live phase
@@ -307,6 +313,7 @@ const LiveCall = () => {
   // Subscribe to call updates for partner's decision
   useEffect(() => {
     if (phase !== "waiting" || !callId) return;
+    let cancelled = false;
 
     // First check if both decisions already exist
     const checkDecisions = async () => {
@@ -315,6 +322,7 @@ const LiveCall = () => {
         .select("caller_decision, callee_decision, is_mutual_spark")
         .eq("id", callId)
         .single();
+      if (cancelled) return;
       if (data?.caller_decision && data?.callee_decision) {
         setWasMutualSpark(!!data.is_mutual_spark);
         setPhase(data.is_mutual_spark ? "mutual-spark" : "no-spark");
@@ -330,6 +338,7 @@ const LiveCall = () => {
         table: "calls",
         filter: `id=eq.${callId}`,
       }, (payload) => {
+        if (cancelled) return;
         const row = payload.new as CallRecord;
         if (row.caller_decision && row.callee_decision) {
           setWasMutualSpark(!!row.is_mutual_spark);
@@ -338,7 +347,7 @@ const LiveCall = () => {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [phase, callId]);
 
   // Handle safe exit
