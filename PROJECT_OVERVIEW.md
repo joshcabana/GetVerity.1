@@ -1,8 +1,8 @@
 # Verity — Comprehensive Project Examination
 
-*Last updated: March 5, 2026*
+*Last updated: March 12, 2026*
 
-> **Production-Ready** — All five phases complete. All external credentials configured.
+> **Production-Ready** — All six phases complete. QA audit passed. Deployed at [getverity.com.au](https://getverity.com.au).
 
 ---
 
@@ -13,226 +13,212 @@ Verity is a verified, safety-first speed-dating platform built around 45-second 
 1. **Authentic first impressions** — Replace swipe-based profile browsing with live 45-second video calls that surface real voice, eye contact, and presence.
 2. **Zero ghosting by design** — The mutual-spark gate means identities are revealed only when both participants choose "Spark." A "Pass" is silent and private, eliminating rejection exposure.
 3. **Safety-first architecture** — Real-time AI moderation during calls, server-verified identity gates (phone, selfie, safety pledge), and one-tap Safe Exit and Guardian Net for immediate protection.
-4. **Privacy by default** — Participants are anonymous during the 45-second call. Personal information is withheld until mutual consent.
+4. **Privacy by default** — Participants are anonymous during the 45-second call. Video is pixelated via canvas processing. Personal information is withheld until mutual consent.
 5. **Radical transparency** — A public Transparency page exposes platform safety statistics, moderation accuracy, appeals outcomes, and founding principles.
 6. **Intention over addiction** — Scheduled Drops replace infinite scroll. No dopamine loops, no dark-pattern engagement mechanics. Revenue comes from token packs and Verity Pass subscriptions.
 
 ---
 
-## 2. Strategic Plans & Methodologies
+## 2. Architecture & Technology Stack
 
-### 2.1 Architecture & Technology Stack
+### 2.1 System Overview
 
 | Layer | Technology | Details |
 |-------|-----------|---------|
-| **Frontend** | React 18 + Vite + TypeScript | 14 pages, 91+ components across 8 directories, lazy-loaded heavy routes |
-| **UI** | shadcn/ui + Tailwind CSS + Framer Motion | Responsive design with motion transitions; Sonner for toast notifications |
-| **State** | React Query + AuthContext + Supabase Realtime | Server cache via TanStack Query; global auth/trust/admin state in context; live subscriptions for drops, messages, and queue |
-| **Backend** | Supabase (PostgreSQL + RLS) | 20 tables, 6 custom enums, 13 RPC functions, row-level security policies |
-| **Edge Functions** | 16 Deno functions on Supabase | Matchmaking, video auth, AI moderation, payments, appeals, admin moderation, push notifications, stats aggregation, feature flags, VAPID keys, friend invites, demo tokens |
-| **Video** | Agora RTC SDK | 45-second sessions with server-issued tokens (10-minute expiry), call participation verified server-side |
-| **Payments** | Stripe | Checkout Sessions (all Dashboard-configured payment methods including Apple Pay & Google Pay), Billing Portal, Webhooks with idempotency via `stripe_processed_events` |
-| **AI Moderation** | Lovable AI Gateway (Gemini 2.5 Flash Lite) | Tool-use based structured risk scoring with policy-driven violation detection |
-| **Deployment** | Lovable.app + Supabase Cloud | Frontend hosted on Lovable; backend on Supabase managed infrastructure |
+| **Frontend** | React 18 + Vite + TypeScript | 24 pages, 116 components, all routes lazy-loaded |
+| **UI** | shadcn/ui + Tailwind CSS + Framer Motion | Dark theme, responsive, Sonner toasts |
+| **State** | React Query + AuthContext + Supabase Realtime | Server cache via TanStack Query; live subscriptions for drops, messages, queue |
+| **Backend** | Supabase (PostgreSQL + RLS) | 26 tables, 6 enums, 66 RLS policies, 10+ RPC functions |
+| **Edge Functions** | 22 Deno functions on Supabase | Matchmaking, video auth, AI moderation, payments, GDPR, push, stats |
+| **Video** | Agora RTC SDK | 45s sessions, server-issued tokens (10-min expiry), anonymized canvas pixelation |
+| **Payments** | Stripe | Checkout, Billing Portal, Webhooks with idempotency |
+| **AI** | Lovable AI Gateway (Gemini 2.5 Flash Lite) | Tool-use moderation + post-call reflection |
+| **Push** | Web Push API (VAPID) | Browser notifications for matches and reminders |
+| **Hosting** | Cloudflare (frontend) + Supabase Cloud (backend) | Custom domain: getverity.com.au |
+| **Testing** | Vitest + Testing Library | 15 suites, 74 tests |
 
-### 2.2 Database Schema (20 Tables)
+### 2.2 Database Schema (26 Tables)
 
 | Table | Purpose |
 |-------|---------|
 | `profiles` | User profiles: display name, avatar, age, city, gender, bio, token balance, subscription tier |
-| `user_trust` | Onboarding verification state: phone verified, selfie verified, safety pledge, DOB, preferences, onboarding step/completion |
+| `user_trust` | Onboarding verification state: phone verified, selfie verified, safety pledge, DOB, preferences |
 | `user_roles` | Role-based access: `admin`, `moderator`, `user` |
 | `user_blocks` | Bidirectional user blocking for matchmaking exclusion |
 | `user_payment_info` | Stripe customer ID mapping for deterministic payment lookups |
-| `rooms` | Themed rooms with categories, descriptions, icons, gender balance tracking, premium flags |
+| `rooms` | Themed rooms with categories, descriptions, icons, gender balance tracking |
 | `drops` | Scheduled speed-dating events: title, region, timezone, capacity, duration, Friendfluence flag |
 | `drop_rsvps` | User RSVPs for drops with check-in status and friend invite codes |
 | `matchmaking_queue` | Atomic queue entries: user/room/drop, status tracking, matched call reference |
-| `calls` | Video call records: caller/callee, Agora channel, start/end times, duration, Spark/Pass decisions, mutual spark flag, cloud recording metadata (resource_id, sid, url) |
-| `sparks` | Mutual spark connections: linked call, AI insight, voice intro URLs, expiry, archive status |
+| `calls` | Video call records: caller/callee, Agora channel, timing, decisions, cloud recording metadata |
+| `sparks` | Mutual spark connections: linked call, AI insight, voice intro URLs, expiry |
 | `messages` | Post-spark chat: text and voice messages with read receipts |
-| `moderation_flags` | AI and human moderation flags: flagged user, call, reason, AI confidence, clip URL, action taken |
+| `spark_reflections` | Private post-call reflections with AI-generated insight |
+| `chemistry_vault_items` | Personal chemistry notes linked to sparks and reflections |
+| `chemistry_replays` | 8-second highlight reels from mutual-spark calls |
+| `moderation_flags` | AI and human moderation flags: flagged user, call, reason, AI confidence, action taken |
 | `moderation_events` | Detailed moderation event log: call, risk score, action, metadata |
-| `appeals` | User appeals against moderation decisions: explanation, voice note, admin response, status |
-| `reports` | User-submitted reports: reason, reported user, call, buffer URL, review status |
-| `token_transactions` | Token credit/debit ledger: amount, reason, Stripe session reference |
-| `stripe_processed_events` | Webhook idempotency table: prevents duplicate processing of Stripe events |
-| `platform_stats` | Aggregated platform metrics: active users, total calls/sparks, moderation stats, gender balance |
-| `runtime_alert_events` | System-level alert log: level, message, metadata |
-| `push_subscriptions` | Web push notification subscriptions: endpoint, keys |
+| `reports` | User-submitted reports: reason, reported user, call, review status |
+| `appeals` | User appeals against moderation decisions: explanation, voice note, admin response |
 | `guardian_alerts` | Guardian Net safe-call signals logged during live calls |
-| `app_config` | Runtime configuration (auth policy, feature flags) |
-| `chemistry_replays` | 8-second anonymized highlight reels from mutual-spark calls, linked to sparks and calls |
+| `token_transactions` | Token credit/debit ledger: amount, reason, Stripe session reference |
+| `push_subscriptions` | Web push notification subscriptions: endpoint, keys |
+| `platform_stats` | Aggregated platform metrics: users, calls, sparks, moderation, gender balance |
+| `stripe_processed_events` | Webhook idempotency: prevents duplicate processing of Stripe events |
+| `app_config` | Runtime configuration: auth policy, feature flags |
+| `runtime_alert_events` | System-level alert log: level, message, metadata |
 
-### 2.3 Edge Functions (19)
+### 2.3 Edge Functions (22)
 
-| Function | Responsibility |
-|----------|---------------|
-| `find-match` | Atomic matchmaking: joins queue, finds waiting partner (excluding blocked users), creates call record, returns call ID |
-| `agora-token` | Issues Agora RTC tokens with 10-minute expiry after verifying user is a participant in the requested call |
-| `agora-demo-token` | Issues demo Agora tokens for development/testing without call-participation checks |
-| `ai-moderate` | Analyzes call transcripts/metadata via LLM (Gemini 2.5 Flash Lite) with tool-use; returns structured risk score, violation flag, and reason |
-| `create-checkout` | Creates Stripe Checkout sessions with dynamic payment method support (Apple Pay, Google Pay, cards, etc.); validates JWT auth, origin allowlist, and price-ID allowlist; maps to payment or subscription mode |
-| `stripe-webhook` | Processes Stripe events (`checkout.session.completed`, `customer.subscription.deleted`); idempotent via `stripe_processed_events`; credits tokens or updates subscription tier |
-| `customer-portal` | Creates Stripe Billing Portal sessions for subscription management; validates return URL against origin allowlist |
-| `check-subscription` | Verifies user's current subscription status against Stripe |
-| `spark-extend` | Extends spark connection expiry window |
-| `submit-appeal` | Processes user appeals against moderation flags with optional voice notes |
-| `admin-moderation` | Admin-only endpoint for reviewing flags and taking moderation actions (ban/warn/clear) |
-| `generate-friend-invite` | Generates unique invite codes for Friendfluence Drops |
-| `send-push` | Sends Web Push notifications to subscribed users (new sparks, RSVP reminders) |
-| `generate-vapid-keys` | Generates VAPID key pairs for Web Push notification setup |
-| `get-feature-flags` | Returns runtime feature flags from `app_config` (phone verification mode, etc.) |
-| `aggregate-stats` | Aggregates platform metrics into `platform_stats` table (scheduled cron job) |
-| `start-cloud-recording` | Acquires and starts Agora Cloud Recording for a live call channel; stores resource_id and sid on the call record |
-| `stop-cloud-recording` | Stops Agora Cloud Recording and retrieves the recording URL; updates the call record |
-| `generate-replay` | Creates chemistry replay records from call recordings; links recording URL and marks status |
+| Function | Auth | Responsibility |
+|----------|------|---------------|
+| `find-match` | JWT | Atomic matchmaking with row-level locks, trust gate, block filtering |
+| `agora-token` | JWT | RTC tokens with 10-min expiry, call participation verified |
+| `agora-demo-token` | Public | Demo tokens for GreenRoom device testing |
+| `ai-moderate` | JWT | Real-time AI moderation via Gemini with structured risk scoring |
+| `spark-reflection-ai` | JWT | Post-call AI coaching insight generation |
+| `create-checkout` | JWT | Stripe Checkout with price-ID allowlist, server-built URLs |
+| `customer-portal` | JWT | Stripe Billing Portal with URL validation |
+| `stripe-webhook` | Signature | Idempotent webhook: checkout, subscription lifecycle, invoice |
+| `check-subscription` | JWT | Subscription status check |
+| `spark-extend` | JWT | Extend spark expiry with atomic token deduction |
+| `submit-appeal` | JWT | Moderation appeal submission with validation |
+| `admin-moderation` | JWT+Admin | Admin appeal review (approve/deny) |
+| `send-push` | Service/Admin | Web Push dispatch with stale subscription cleanup |
+| `generate-friend-invite` | JWT | Friendfluence invite code generation |
+| `generate-replay` | JWT | Chemistry replay record creation |
+| `start-cloud-recording` | JWT | Agora Cloud Recording acquire + start |
+| `stop-cloud-recording` | JWT | Agora Cloud Recording stop + URL extraction |
+| `delete-account` | JWT | GDPR account deletion (RPC + auth user delete) |
+| `export-my-data` | JWT | GDPR data export with partner redaction |
+| `aggregate-stats` | Service | Automated platform statistics aggregation |
+| `get-feature-flags` | Public | Feature flag retrieval from `app_config` |
+| `generate-vapid-keys` | Public | VAPID key pair generation |
 
-### 2.4 Phased Timeline
+### 2.4 Security Model
 
-| Phase | Status | Scope |
-|-------|--------|-------|
-| **Phase 1 — Core Platform** | Complete | Auth, 8-step onboarding, lobby/drops, Agora video calls, 45s timer, Spark/Pass mechanic, mutual-spark reveal, spark history, post-match chat |
-| **Phase 2 — Safety & Infrastructure** | Complete | AI moderation wired to real LLM with live-call transcript fallback, matchmaking queue with block filtering, selfie verification, admin dashboard (moderation queue + appeals inbox + analytics), transparency page, appeals flow, security hardening, Profile page |
-| **Phase 3 — Payments & Premium** | Complete | Token shop with 3 packs (10/15/30 tokens), Verity Pass subscriptions (monthly/annual), Stripe Checkout + Customer Portal + Webhook handler with idempotency and customer-ID mapping |
-| **Phase 4 — Innovations** | Complete | Voice Intro (record during call, replay in chat via signed URLs), Guardian Net (server-side alert logging to `guardian_alerts`), Spark Reflection AI insight, Friendfluence Drops with invite links |
-| **Phase 5 — Operations & Polish** | Complete | Push notifications, automated platform stats aggregation, JSON-LD SEO, unread message badges, Chemistry Replay Vault (table + UI + edge functions), Agora Cloud Recording integration, bundle optimization via manualChunks, 33 passing tests across 11 suites |
-
-### 2.5 Sprint Schedule (relative to Feb 27, 2026)
-
-| Sprint | Dates | Focus |
-|--------|-------|-------|
-| **Current** | Feb 24 – Mar 7 | Harden trust gates (phone/selfie/pledge enforcement in `AuthContext` + onboarding), stabilize drop RSVP + matchmaking queue (`find-match`), ensure Agora token issuance flow works end-to-end in LiveCall |
-| **Next** | Mar 8 – Mar 21 | Tune AI moderation thresholds, wire reporting → appeals dashboard, validate Guardian Net + Safe Exit in live calls |
-| **Pilot & Telemetry** | Mar 22 – Apr 4 | Run limited Drops with real users, track spark conversion/appeals/moderation rates, surface live metrics on Transparency and Admin pages |
-| **Monetization Hardening** | Apr 5 – Apr 18 | Finalize token shop pricing guardrails, verify subscription lifecycle via `stripe-webhook`, add retention hooks (Spark History → Chat → Voice Intro flow) |
-
----
-
-## 3. Current Progress & Status
-
-### 3.1 Completed
-
-**Frontend (14 pages, fully implemented):**
-- **Landing** — Marketing narrative with Hero, Stats counter, Features grid, Innovations showcase, safety/privacy positioning, and JSON-LD structured data
-- **Auth** — Supabase email/password authentication with redirect handling
-- **Onboarding** — 8-step progressive flow: welcome → age verification → phone → selfie → safety pledge → preferences → profile setup → completion (each step updates `user_trust`)
-- **Lobby** — Drop discovery with search/filter, RSVP management, realtime participant counts, matchmaking queue entry via `find-match`
-- **LiveCall** — 45-second anonymous video via Agora, countdown timer, Spark/Pass decision capture, mutual-spark reveal with confetti animation, Guardian Net alert, Safe Exit, and in-call reporting
-- **SparkHistory** — List of mutual sparks with partner info, AI insights, unread message badges, and navigation to chat
-- **Chat** — Real-time text and voice messaging with read receipts via Supabase Realtime, Voice Intro banner
-- **TokenShop** — 3 token packs + 2 subscription tiers (monthly/annual), integrated with Stripe Checkout, purchase success handling
-- **Profile** — Avatar upload to Supabase Storage, editable display name, verification badges (phone/selfie/pledge), token balance display, subscription management via Customer Portal, sign-out
-- **Admin** — Moderation queue with flag review (ban/warn/clear), appeals inbox with admin response, analytics dashboard, user management (admin-role gated)
-- **Transparency** — Founding principles, safety statistics (live from `platform_stats`), moderation accuracy rates, appeals outcomes
-- **Appeal** — User-facing appeal submission with explanation and optional voice note upload
-- **Friendfluence** — Invite friends to Drops with generated invite links and activity ticker
-
-**Backend (19 edge functions, 13 RPC functions):**
-- All 19 edge functions deployed and functional with JWT authentication
-- Atomic matchmaking with block-list filtering (`find-match`)
-- Agora token issuance with server-side call participation verification (`agora-token`)
-- AI moderation via real LLM (Lovable AI Gateway / Gemini 2.5 Flash Lite) with structured tool-use and policy-based risk scoring (`ai-moderate`)
-- Stripe payment flow: checkout with dynamic payment methods (Apple Pay, Google Pay, cards, etc. via Dashboard configuration), price-ID allowlist, webhook processing with idempotency, customer portal with origin-validated return URLs
-- Admin moderation actions persisted to `moderation_flags` with audit trail
-- Push notification system: VAPID key generation, subscription management, notification dispatch
-- Automated platform stats aggregation via `aggregate-stats` cron
-- Feature flag system via `get-feature-flags` for runtime configuration
-
-**Security hardening:**
-- JWT authentication enforced on all edge functions
-- Price-ID allowlist in `create-checkout` prevents arbitrary Stripe price injection
-- Origin allowlist on `create-checkout` and `customer-portal` prevents open redirect attacks
-- Webhook signature verification with `stripe.webhooks.constructEventAsync`
-- Idempotent event processing via `stripe_processed_events` table (PK on `event_id`)
-- Customer-ID mapping for deterministic Stripe lookups (replaces email-based approach)
-- Agora tokens issued with 10-minute expiry and call-participation verification
-- Protected routes with admin-role gating via `has_role` RPC function
-- Error boundary wrapping the application root
-
-**Testing (11 suites, 33 tests):**
-- Auth capabilities and feature flag parsing
-- Route guarding and protected route behavior
-- Guardian Net component and Voice Intro banner
-- Live call moderation wiring
-- Matchmaking atomicity
-- URL validation for edge functions
-
-- Lazy loading for 10 heavy routes: Landing, LiveCall, SparkHistory, Chat, TokenShop, Admin, Transparency, Appeal, Profile, Friendfluence
-- Code splitting via React.lazy + Suspense with loading spinner fallback
-- Bundle optimization: `manualChunks` in Vite config splits Agora SDK, Framer Motion, Recharts, and React Router into independent vendor chunks
-
-**Credentials & Infrastructure:**
-- **Agora Cloud Recording credentials** — `AGORA_CUSTOMER_KEY` and `AGORA_CUSTOMER_SECRET` configured in Lovable Cloud Secrets (March 4, 2026)
-
-### 3.2 In Progress
-
-None — all items complete.
-
-### 3.3 Upcoming
-
-- **Granular drop scheduling** — More control over drop timing, region targeting, and capacity management
+| Layer | Implementation |
+|-------|---------------|
+| Authentication | JWT verification via `supabase.auth.getUser()` or `getClaims()` on all endpoints |
+| Authorization | Admin role double-checked via `user_roles` table; trust gates for call participation |
+| Input validation | UUID regex on all IDs, price allowlists, length limits, URL validation |
+| Rate limiting | Per-user/IP limits on all endpoints (2–20 req/min depending on action) |
+| CORS | Restricted to 3 origins: `getverity.com.au`, Lovable preview, Lovable app |
+| Payment security | Server-side price-ID allowlist, server-built redirect URLs, webhook signature verification |
+| Idempotency | `stripe_processed_events` table prevents duplicate processing |
+| Token operations | Atomic SQL RPCs (`add_tokens`, `deduct_tokens`) prevent race conditions |
+| Matchmaking | `claim_match_candidate` RPC with row-level locks prevents double-matching |
+| Privacy | Canvas-pixelated video during anonymous calls; partner info redacted in data exports |
+| Fail-open | AI moderation and feature flags fail open with safe defaults |
 
 ---
 
-## 4. Challenges & Mitigations
+## 3. Development Phases
 
-### Active Challenges
+### Phase 1 — Core Platform ✅
+Auth, 8-step onboarding, lobby/drops, Agora video calls, 45s timer, Spark/Pass mechanic, mutual-spark reveal, spark history, post-match chat.
 
-| Challenge | Severity | Details | Mitigation |
-|-----------|----------|---------|-----------|
-| **AI moderation threshold tuning** | Moderate | `ai-moderate` function is wired into live calls but thresholds need calibration with real user data. | Run pilot Drops to collect moderation events and tune risk-score thresholds based on actual call patterns. |
-| **Bundle size** | Moderate | Vite build emits a >2.5 MB chunk warning. | Lazy loading for 8 routes partially addresses this. Further code splitting of heavy dependencies (Agora SDK, Stripe.js) and tree-shaking review needed. |
-| **Environment secrets** | Operational | Agora App ID/Certificate, Stripe Secret Key/Webhook Secret, Supabase URL/Keys, and Lovable API Key are mandatory for call and payment flows. | Document required environment variables. Ensure deployment secrets are configured per environment (dev/staging/production) before pilots. |
+### Phase 2 — Safety & Infrastructure ✅
+AI moderation (real LLM), matchmaking queue with block filtering, selfie verification, admin dashboard, transparency page, appeals flow, user blocking.
 
-### Resolved Challenges
+### Phase 3 — Payments & Premium ✅
+Token shop (3 packs: 10/15/30 tokens), Verity Pass subscriptions (monthly/annual), Stripe Checkout + Customer Portal + webhook handler with idempotency.
 
-| Challenge | Resolution |
-|-----------|-----------|
-| **AI moderation stub** | Upgraded from `Math.random()` score to real LLM call (Gemini 2.5 Flash Lite via Lovable AI Gateway) with structured tool-use and policy-based violation detection. |
-| **Payment security** | `create-checkout` now enforces JWT authentication, derives user email from session, validates request origin against an allowlist, and checks price-ID against a hardcoded map. |
-| **Webhook idempotency** | Added `stripe_processed_events` table with primary key on `event_id` to prevent duplicate token credits or subscription updates. |
-| **Agora token security** | Replaced client-side stubs with `RtcTokenBuilder.buildTokenWithUid` on the server, issuing tokens with 10-minute expiry only after verifying the requesting user is a participant in the call. |
-| **Open redirect risk** | Customer portal `return_url` is validated via strict URL parsing + exact origin allowlist before creating Stripe Billing Portal sessions. |
-| **Bundle performance** | Added lazy loading via `React.lazy` + `Suspense` for 10 routes and `manualChunks` in Vite config to split heavy vendor dependencies (Agora SDK, Framer Motion, Recharts, React Router) into independent chunks. |
-| **Test coverage gap** | Resolved: 9 test suites with 33 passing tests covering auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, and URL validation. |
-| **Stats population** | Resolved: `aggregate-stats` edge function deployed as automated cron; Transparency and Admin pages now read live data from `platform_stats`. |
-| **Lint/type debt** | ESLint config updated with targeted suppressions. CI lint step passes cleanly. |
+### Phase 4 — Innovations ✅ (Feature-Flagged)
+Friendfluence Drops, Spark Reflection AI, Voice Intros, Guardian Net, Chemistry Replay Vault — all toggled via `app_config` without code changes.
 
----
+### Phase 5 — Operations & Polish ✅
+Push notifications (VAPID/Web Push), automated stats aggregation, SEO (JSON-LD, OG tags, canonical), bundle optimization (manual chunks, lazy loading), Agora Cloud Recording, About page.
 
-## 5. Adjustments to Original Plans
-
-1. **AI moderation accelerated** — Upgraded from a random-score stub to a real LLM with tool-use ahead of the original "Next sprint" timeline. Now wired into live calls; threshold tuning is the remaining work.
-2. **Security hardening promoted** — Originally planned for later phases, payment and token-issuance security vulnerabilities were identified and addressed immediately in Phase 2.
-3. **Profile page added** — Not in the original plan; added to Phase 2 scope to provide users with account management, verification status visibility, and subscription controls.
-4. **Customer-ID mapping** — The Stripe webhook originally used email-based customer lookups. Updated to use `stripe_customer_id` stored on `user_payment_info` for deterministic, reliable mapping.
-5. **Lazy loading introduced** — Added code splitting for 8 routes in `App.tsx` to address the >2.5 MB bundle warning and improve initial page load performance.
-6. **Transparency and appeals prioritized** — Built governance surfaces (Transparency page, Admin appeals inbox, `submit-appeal` function) before GA to establish trust infrastructure early.
-7. **Trust gates as prerequisite** — Gated live Drop participation behind multi-step verification (phone, selfie, safety pledge) to reduce fraud and bad actors during the pilot phase.
-8. **Phase 5 added** — Operations & Polish phase was not in the original plan; added to cover push notifications, stats automation, SEO, and test coverage.
+### Phase 6 — QA Audit & Production Hardening ✅ ← CURRENT
+- 9-phase comprehensive quality audit
+- RLS policy verification: 66 policies across 26 tables
+- 3 RLS fixes applied: `user_blocks` (public→authenticated), `chemistry_replays` (public→authenticated), `platform_stats` (restored public read)
+- Transparency page GitHub link corrected
+- Full code quality scan: 0 TypeScript errors, 0 ESLint errors, 0 console.logs, 0 exposed secrets
+- Test suite expanded: 15 suites, 74 tests passing
+- All 22 edge functions verified operational
+- All 12 public routes verified HTTP 200
+- Security headers confirmed: HSTS, X-Content-Type-Options, Referrer-Policy
+- SMTP verified working (confirmation emails delivered)
+- Production build deployed: `index-BsLfjy75.js`
+- Deep code audit: line-by-line review of all edge functions for error handling, race conditions, input validation, and security
 
 ---
 
-## 6. Development Metrics
+## 4. Current Production State (March 12, 2026)
+
+| Check | Result |
+|-------|--------|
+| TypeScript | 0 errors |
+| ESLint | 0 errors |
+| Test suites | 15 passing |
+| Tests | 74 passing |
+| Edge functions | 22/22 responding correctly |
+| RLS policies | 66 verified |
+| Public routes | 12/12 HTTP 200 |
+| Security headers | HSTS, nosniff, referrer-policy |
+| Build deployed | `index-BsLfjy75.js` |
+| SMTP | Working (confirmation emails) |
+| Visual inspection | All pages render correctly |
+
+### Performance
 
 | Metric | Value |
 |--------|-------|
-| Frontend pages | 14 |
-| UI components | 93+ across 8 directories |
-| Edge functions | 19 |
-| Database tables | 21+ |
-| Custom enums | 6 (`app_role`, `appeal_status`, `call_status`, `moderation_action`, `spark_decision`, `subscription_tier`) |
-| RPC functions | 13 (`claim_match_candidate`, `get_drop_rsvp_count`, `has_role`, `is_spark_member`, `submit_call_decision`, `update_my_profile`, `shares_spark_with`, `get_spark_partner_profile`, `check_mutual_spark`, `notify_new_message`, `notify_new_spark`, `handle_new_user`, `update_updated_at_column`) |
-| Test suites | 11 (33 passing tests) |
-| Deployment target | Lovable.app (frontend) + Supabase Cloud (backend) |
+| Initial load (gzip) | ~169 KB |
+| Agora SDK | 1.3 MB (lazy-loaded on call pages only) |
+| Charts | 401 KB (lazy-loaded on admin/transparency only) |
+| Pages lazy-loaded | All 24 via React.lazy + Suspense |
+| Route response time | < 1.1s (all routes) |
+
+### Configured Secrets (11 in Lovable)
+
+`AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`, `AGORA_CUSTOMER_KEY`, `AGORA_CUSTOMER_SECRET`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `Google_Gemini`, `OpenAI`, `LOVABLE_API_KEY`
 
 ---
 
-## 7. Progress Validation
+## 5. Development Metrics
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| `npm run test` | Passes | 33 tests passing across 11 suites (auth capabilities, feature flags, route guarding, Guardian Net, Voice Intro, moderation wiring, matchmaking atomicity, URL validation) |
-| `npm run build` | Passes | Vite production build succeeds; vendor chunks split via manualChunks |
-| `npm run lint` | Passes | Zero warnings or errors |
+| Metric | Value |
+|--------|-------|
+| Total commits | 441 |
+| Frontend pages | 24 |
+| UI components | 116 |
+| Custom hooks | 7 |
+| Edge functions | 22 |
+| Database tables | 26 |
+| Custom enums | 6 |
+| RLS policies | 66 |
+| Test suites | 15 |
+| Tests | 74 |
+| Production URL | getverity.com.au |
+
+---
+
+## 6. Remaining Items
+
+### Manual Dashboard Configuration (require account access)
+1. Verify Stripe webhook signing secret matches in Stripe Dashboard
+2. Add `X-Frame-Options: DENY` and CSP headers via Cloudflare Transform Rules
+3. Optional: Add Sentry DSN for error monitoring (`VITE_SENTRY_DSN`)
+
+### Future Development
+- Granular drop scheduling (region targeting, capacity management)
+- AI moderation threshold tuning with real user data
+- Extended analytics and A/B testing framework
+
+---
+
+## 7. Challenges & Mitigations
+
+| Challenge | Resolution |
+|-----------|-----------|
+| **Payment security** — checkout accepted arbitrary inputs | Rewrote: JWT auth, server-derived email, server-built URLs, price-ID allowlist |
+| **Webhook idempotency** — duplicate events caused double credits | Added `stripe_processed_events` table with PK on event_id |
+| **Agora stub tokens** — placeholder tokens broke calls | Replaced with `RtcTokenBuilder.buildTokenWithUid` (10-min expiry) |
+| **Open redirect** — customer portal accepted arbitrary return URLs | Strict URL parsing + exact-origin allowlist validation |
+| **AI moderation stub** — random scores | Upgraded to Gemini 2.5 Flash Lite with structured tool-use |
+| **RLS gaps** — `user_blocks` and `chemistry_replays` allowed anon access | Fixed: policies changed from `public` to `authenticated` role |
+| **Test coverage** — 1 placeholder test | Expanded to 15 suites, 74 tests |
+| **Bundle size** — 2.5MB+ monolith | Lazy loading + manual chunks: 169KB initial load |
